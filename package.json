@@ -1,0 +1,42 @@
+{
+  "name": "react-site",
+  "version": "0.0.1",
+  "description": "React-based static site generator without Webpack.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiatjaf/react-site.git"
+  },
+  "keywords": [
+    "react",
+    "static",
+    "site",
+    "generator",
+    "browserify"
+  ],
+  "author": "Giovanni T. Parra",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fiatjaf/react-site/issues"
+  },
+  "homepage": "https://github.com/fiatjaf/react-site#readme",
+  "dependencies": {
+    "catch-links": "^2.0.1",
+    "curl-amd": "^0.8.12",
+    "history": "^4.5.0",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
+    "react-helmet": "^3.2.3",
+    "react-router": "^3.0.0"
+  },
+  "devDependencies": {
+    "aliasify": "^2.1.0",
+    "browserify": "^13.1.1",
+    "envify": "^4.0.0",
+    "recursive-readdir": "^2.1.0",
+    "stringify": "^5.1.0"
+  }
+}
