@@ -2,8 +2,11 @@ var React = require('react')
 var render = require('react-dom').render
 var e = React.createElement
 var createHistory = require('history').createHistory
-var curl = require('curl-amd')
+var amd = require('micro-amd')()
 var catchLinks = require('catch-links')
+
+window.define = amd.define.bind(amd)
+window.define.amd = true
 
 var history = createHistory({
   basename: ''
@@ -23,9 +26,9 @@ var Main = React.createClass({
   },
 
   componentDidMount () {
-    history.listen(function (location, action) {
-      console.log('navigating', action, location.pathname)
-      curl([location.pathname + 'index.js'], function (page) {
+    history.listen(function (location) {
+      console.log('> navigating', location.pathname)
+      amd.require([location.pathname + 'index.js'], function (page) {
         this.setState({
           location: location,
           child: page
@@ -53,7 +56,7 @@ var Main = React.createClass({
   }
 })
 
-curl([window.location.pathname + 'index.js'], function (page) {
+amd.require([window.location.pathname + 'index.js'], function (page) {
   render(React.createElement(Main, {
     page: page,
     pathname: window.location.pathname
