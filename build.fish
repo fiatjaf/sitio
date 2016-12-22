@@ -34,14 +34,21 @@ end
 function max
   echo $argv | tr " " "\n" | sort -nr | head -n 1
 end
+function filedate
+  if [ -s $argv[1] ]
+    date -r $argv[1] +%s
+  else
+    echo 0
+  end
+end
 
 echo
 
-set lastmodstanda (date -r $Wrapper +%s)
-set lastmodstatic (max (date -r $Body +%s) (date -r $Helmet +%s))
+set lastmodstanda (filedate $Wrapper)
+set lastmodstatic (max (filedate $Body) (filedate $Helmet))
 for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*' ! -path './.*' ! -path './_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
   echo "  > $path:"
-  set lastmodsrc (date -r $path +%s)
+  set lastmodsrc (filedate $path)
 
   set -x EMBED (realpath --relative-to=$module $path)
   if isindex $path
@@ -52,17 +59,11 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   set standalonepath (string replace -r -a '^\.' "$target" $jspath)
   echo "    # standalone: $standalonepath"
   mkdir -p (dirname $standalonepath)
-  set cmd (browserify --standalone doesntmatter --no-bundle-external -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath)
-  if [ ! -e $standalonepath ]
-    eval $cmd
+  if [ (max $lastmodsrc $lastmodstanda) -gt (filedate $standalonepath) ]
+    browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
     echo '      * done.'
   else
-    if [ (max $lastmodsrc $lastmodstanda) -gt (date -r $standalonepath +%s) ]
-      eval $cmd
-      echo '      * done.'
-    else
-      echo '      % already there.'
-    end
+    echo '      % already there.'
   end
 
   if isindex $path
@@ -80,16 +81,11 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   end
   echo "    # static: $staticpath"
   mkdir -p (dirname $staticpath)
-  if [ ! -e $staticpath ]
+  if [ (max $lastmodsrc $lastmodstatic) -gt (filedate $staticpath) ]
     node $module/static.js > $staticpath
     echo '      * done.'
   else
-    if [ (max $lastmodsrc $lastmodstatic) -gt (date -r $staticpath +%s) ]
-      node $module/static.js > $staticpath
-      echo '      * done.'
-    else
-      echo '      % already there.'
-    end
+    echo '      % already there.'
   end
 end
 
