@@ -26,15 +26,17 @@ var Main = React.createClass({
   },
 
   componentDidMount () {
+    var self = this
+
     history.listen(function (location) {
       console.log('> navigating', location.pathname)
       amd.require([location.pathname + 'index.js'], function (page) {
-        this.setState({
+        self.setState({
           location: location,
-          child: page
+          page: page
         })
-      }.bind(this))
-    }.bind(this))
+      })
+    })
 
     catchLinks(document.body, function (href) {
       history.push(href)
@@ -45,13 +47,11 @@ var Main = React.createClass({
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 
-    return e('body', null,
-      e(Body, {
-        location: this.props.location
-      },
-        makeHelmet(this.state),
-        this.state.page
-      )
+    return e(Body, {
+      location: this.props.location
+    },
+      makeHelmet(this.state),
+      e(this.state.page, this.state)
     )
   }
 })
@@ -60,5 +60,5 @@ amd.require([window.location.pathname + 'index.js'], function (page) {
   render(React.createElement(Main, {
     page: page,
     pathname: window.location.pathname
-  }), document.body)
+  }), document.getElementById('react-mount'))
 })

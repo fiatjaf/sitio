@@ -20,18 +20,16 @@ var Main = React.createClass({
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 
-    return e('body', null,
-      e(Body, {
-        location: this.props.location
-      },
-        makeHelmet(this.state),
-        this.state.page
-      )
+    return e(Body, {
+      location: this.props.location
+    },
+      makeHelmet(this.state),
+      e(this.state.page, this.state)
     )
   }
 })
 
-var body = renderToString(React.createElement(Main, {
+var output = renderToString(React.createElement(Main, {
   page: require(process.env.STANDALONE),
   pathname: process.env.PATHNAME
 }))
@@ -49,6 +47,6 @@ process.stdout.write(
   head.noscript.toString() +
   head.script.toString() +
   '</head>' +
-  body +
+  '<body><div id="react-mount">' + output + '</div></body>' +
   '</html>'
 )

@@ -1,7 +1,6 @@
-var React = require('react')
-var Wrapper = require(process.env.WRAPPER)
+var makeWrapper = require(process.env.WRAPPER)
 
-module.exports = React.createElement(Wrapper, {
+module.exports = makeWrapper({
   filename: process.env.EMBED,
   embedded: require(process.env.EMBED)
-}, null)
+})
