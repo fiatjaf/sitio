@@ -26,14 +26,22 @@ echo "adding $here/node_modules and $module/node_modules to NODE_PATH"
 set -x NODE_PATH "$here/node_modules:$module/node_modules"
 echo
 echo "making standalone bundles for all pages (to be loaded asynchronously) and putting those on $target at the same time creating the static html for each page."
+
 function isindex
   set noext (string match -r '\/([^./]+)\.\w+' $argv[1] | tail -n 1)
   return ( [ "$noext" = 'index' ] )
 end
+function max
+  echo $argv | tr " " "\n" | sort -nr | head -n 1
+end
+
 echo
 
+set lastmodstanda (date -r $Wrapper +%s)
+set lastmodstatic (max (date -r $Body +%s) (date -r $Helmet +%s))
 for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*' ! -path './.*' ! -path './_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
   echo "  > $path:"
+  set lastmodsrc (date -r $path +%s)
 
   set -x EMBED (realpath --relative-to=$module $path)
   if isindex $path
@@ -43,9 +51,19 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   end
   set standalonepath (string replace -r -a '^\.' "$target" $jspath)
   echo "    # standalone: $standalonepath"
-  echo "      contents: $EMBED"
   mkdir -p (dirname $standalonepath)
-  browserify --standalone doesntmatter --no-bundle-external -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
+  set cmd (browserify --standalone doesntmatter --no-bundle-external -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath)
+  if [ ! -e $standalonepath ]
+    eval $cmd
+    echo '      * done.'
+  else
+    if [ (max $lastmodsrc $lastmodstanda) -gt (date -r $standalonepath +%s) ]
+      eval $cmd
+      echo '      * done.'
+    else
+      echo '      % already there.'
+    end
+  end
 
   if isindex $path
     set htmlpath (string replace -r -a '\.\w*$' '.html' $path)
@@ -61,9 +79,18 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
     set -x PATHNAME /$prepathname/
   end
   echo "    # static: $staticpath"
-  echo "      location.pathname: $PATHNAME"
   mkdir -p (dirname $staticpath)
-  node $module/static.js > $staticpath
+  if [ ! -e $staticpath ]
+    node $module/static.js > $staticpath
+    echo '      * done.'
+  else
+    if [ (max $lastmodsrc $lastmodstatic) -gt (date -r $staticpath +%s) ]
+      node $module/static.js > $staticpath
+      echo '      * done.'
+    else
+      echo '      % already there.'
+    end
+  end
 end
 
 echo
