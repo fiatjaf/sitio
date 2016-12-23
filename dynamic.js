@@ -1,7 +1,7 @@
 var React = require('react')
 var render = require('react-dom').render
 var e = React.createElement
-var createHistory = require('history').createHistory
+var createHistory = require('history').createBrowserHistory
 var amd = require('micro-amd')()
 var catchLinks = require('catch-links')
 
