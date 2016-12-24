@@ -3,7 +3,7 @@
 set module (dirname (status -f))
 set here (dirname pwd)
 set target $here/_site
-set entry $module/dynamic.js
+set dynamic $module/dynamic.js
 set Body $here/Body.js
 set Helmet $here/Helmet.js
 set Wrapper $here/Wrapper.js
@@ -14,7 +14,7 @@ set -x WRAPPER (realpath --relative-to=$here $Wrapper)
 
 echo "here: $here"
 echo "module directory: $module"
-echo "entry point: $entry"
+echo "entry point: $dynamic"
 echo "target directory: $target"
 echo "Body component: $Body -- will pass $BODY to $module"
 echo "Helmet component: $Helmet -- will pass $HELMET to $module"
@@ -41,14 +41,22 @@ function filedate
     echo 0
   end
 end
+function registerdep
+  set fileid (filedate $argv[1])
+  set dep $argv[2]
+  set deparrayname "deps$fileid"
+  set -g $deparrayname $$deparrayname (filedate $dep)
+end
+function depschanged
+  set fileid (filedate $argv[1])
+  set deparrayname "deps$fileid"
+  return ( [ (max $$deparrayname) -gt $fileid ] )
+end
 
 echo
 
-set lastmodstanda (filedate $Wrapper)
-set lastmodstatic (max (filedate $Body) (filedate $Helmet))
 for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*' ! -path './.*' ! -path './_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
   echo "  > $path:"
-  set lastmodsrc (filedate $path)
 
   set -x EMBED (realpath --relative-to=$module $path)
   if isindex $path
@@ -57,13 +65,14 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
     set jspath (string replace -r -a '\.\w*$' '/index.js' $path)
   end
   set standalonepath (string replace -r -a '^\.' "$target" $jspath)
-  echo "    # standalone: $standalonepath"
   mkdir -p (dirname $standalonepath)
-  if [ (max $lastmodsrc $lastmodstanda) -gt (filedate $standalonepath) ]
+  registerdep $standalonepath $module/standalone.js
+  registerdep $standalonepath $path
+  registerdep $standalonepath $Wrapper
+  if depschanged $standalonepath
+    echo -n "    # standalone: '$standalonepath' "
     browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
-    echo '      * done.'
-  else
-    echo '      % already there.'
+    echo ': done.'
   end
 
   if isindex $path
@@ -79,19 +88,29 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   else
     set -x PATHNAME /$prepathname/
   end
-  echo "    # static: $staticpath"
   mkdir -p (dirname $staticpath)
-  if [ (max $lastmodsrc $lastmodstatic) -gt (filedate $staticpath) ]
+  registerdep $staticpath $module/standalone.js
+  registerdep $staticpath $path
+  registerdep $staticpath $Body
+  registerdep $staticpath $Helmet
+  if depschanged $staticpath
+    echo -n "    # static: '$staticpath' "
     node $module/static.js > $staticpath
-    echo '      * done.'
-  else
-    echo '      % already there.'
+    echo ': done.'
   end
 end
 
 echo
-set browserifyMain ( jq --arg entry $entry --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --debug -t $module/node_modules/envify $entry -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
-echo "compiling main bundle: $target/bundle.js with command:"
-echo $browserifyMain
-eval $browserifyMain > $target/bundle.js
+registerdep $target/bundle.js $dynamic
+registerdep $target/bundle.js $Body
+registerdep $target/bundle.js $Helmet
+if depschanged $target/bundle.js
+  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --debug -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
+  echo "compiling main bundle: $target/bundle.js with command:"
+  echo $browserifyMain
+  eval $browserifyMain > $target/bundle.js
+else
+  echo "main bundle doesn't need changes."
+end
+echo
 echo "everything is done."
