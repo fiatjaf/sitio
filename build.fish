@@ -81,9 +81,10 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   end
   set standalonepath (string replace -r -a '^\.' "$target" $jspath)
   mkdir -p (dirname $standalonepath)
-  registerdep $standalonepath $module/standalone.js
   registerdep $standalonepath $path
   registerdep $standalonepath $Wrapper
+  registerdep $standalonepath $module
+  registerdep $standalonepath $here/node_modules
   echo -n "    # "
   set_color brbrown
   echo -n "standalone"
@@ -113,10 +114,11 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
     set -x PATHNAME /$prepathname/
   end
   mkdir -p (dirname $staticpath)
-  registerdep $staticpath $module/standalone.js
   registerdep $staticpath $path
   registerdep $staticpath $Body
   registerdep $staticpath $Helmet
+  registerdep $staticpath $module
+  registerdep $staticpath $here/node_modules
   echo -n "    # "
   set_color brbrown
   echo -n "static"
@@ -138,6 +140,8 @@ echo
 registerdep $target/bundle.js $dynamic
 registerdep $target/bundle.js $Body
 registerdep $target/bundle.js $Helmet
+registerdep $target/bundle.js $module
+registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
   set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --debug -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
