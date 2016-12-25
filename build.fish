@@ -31,6 +31,9 @@ function isindex
   set noext (string match -r '\/([^./]+)\.\w+' $argv[1] | tail -n 1)
   return ( [ "$noext" = 'index' ] )
 end
+function isroot
+  return ( string match -r "$here\/index\." $argv[1] > /dev/null )
+end
 function max
   echo $argv | tr " " "\n" | sort -nr | head -n 1
 end
@@ -59,20 +62,24 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   echo "  > $path:"
 
   set -x EMBED (realpath --relative-to=$module $path)
-  if isindex $path
+  if isroot $path
     set jspath (string replace -r -a '\.\w*$' '.js' $path)
+  else if isindex $path
+    set jspath (string replace -r -a '\/index\.\w*$' '.js' $path)
   else
-    set jspath (string replace -r -a '\.\w*$' '/index.js' $path)
+    set jspath (string replace -r -a '\.\w*$' '.js' $path)
   end
   set standalonepath (string replace -r -a '^\.' "$target" $jspath)
   mkdir -p (dirname $standalonepath)
   registerdep $standalonepath $module/standalone.js
   registerdep $standalonepath $path
   registerdep $standalonepath $Wrapper
+  echo -n "    # standalone: '$standalonepath'"
   if depschanged $standalonepath
-    echo -n "    # standalone: '$standalonepath' "
     browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
     echo ': done.'
+  else
+    echo ': already there.'
   end
 
   if isindex $path
@@ -82,8 +89,7 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   end
   set staticpath (string replace -r -a '^\.' "$target" $htmlpath)
   set -x STANDALONE (realpath --relative-to=$module $standalonepath)
-  set prepathname (dirname (realpath --relative-to=$target $staticpath))
-  if [ $prepathname = $here ]
+  if isroot $path
     set -x PATHNAME /
   else
     set -x PATHNAME /$prepathname/
@@ -93,10 +99,12 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   registerdep $staticpath $path
   registerdep $staticpath $Body
   registerdep $staticpath $Helmet
+  echo -n "    # static: '$staticpath'"
   if depschanged $staticpath
-    echo -n "    # static: '$staticpath' "
     node $module/static.js > $staticpath
     echo ': done.'
+  else
+    echo ': already there.'
   end
 end
 
@@ -110,7 +118,7 @@ if depschanged $target/bundle.js
   echo $browserifyMain
   eval $browserifyMain > $target/bundle.js
 else
-  echo "main bundle doesn't need changes."
+  echo "$target/bundle.js: main bundle doesn't need to be rebuilt."
 end
 echo
 echo "everything is done."

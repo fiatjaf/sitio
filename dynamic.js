@@ -8,6 +8,14 @@ var catchLinks = require('catch-links')
 window.define = amd.define.bind(amd)
 window.define.amd = true
 
+function standaloneURL (location) {
+  if (location.pathname === '/') {
+    return '/index.js'
+  } else {
+    return location.pathname.slice(0, -1) + '.js'
+  }
+}
+
 var history = createHistory({
   basename: ''
 })
@@ -30,7 +38,7 @@ var Main = React.createClass({
 
     history.listen(function (location) {
       console.log('> navigating', location.pathname)
-      amd.require([location.pathname + 'index.js'], function (page) {
+      amd.require([standaloneURL(location)], function (page) {
         self.setState({
           location: location,
           page: page
@@ -56,7 +64,7 @@ var Main = React.createClass({
   }
 })
 
-amd.require([window.location.pathname + 'index.js'], function (page) {
+amd.require([standaloneURL(window.location)], function (page) {
   render(React.createElement(Main, {
     page: page,
     pathname: window.location.pathname
