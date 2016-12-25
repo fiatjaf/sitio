@@ -32,7 +32,13 @@ function isindex
   return ( [ "$noext" = 'index' ] )
 end
 function isroot
-  return ( string match -r "$here\/index\." $argv[1] > /dev/null )
+  set parts (string split -m 1 --right '/' $argv[1])
+  if string match -r '^index\.\w*$' $parts[2] > /dev/null
+    if [ $parts[1] = $here ]
+      return 0
+    end
+  end
+  return 1
 end
 function max
   echo $argv | tr " " "\n" | sort -nr | head -n 1
