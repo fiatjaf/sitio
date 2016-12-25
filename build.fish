@@ -12,13 +12,13 @@ set -x BODY (realpath --relative-to=$here $Body)
 set -x HELMET (realpath --relative-to=$here $Helmet)
 set -x WRAPPER (realpath --relative-to=$here $Wrapper)
 
-echo "here: $here"
-echo "module directory: $module"
-echo "entry point: $dynamic"
-echo "target directory: $target"
-echo "Body component: $Body -- will pass $BODY to $module"
-echo "Helmet component: $Helmet -- will pass $HELMET to $module"
-echo "Wrapper component: $Wrapper -- will pass $WRAPPER to $module"
+echo -n "here: "; set_color red; echo "$here"; set_color normal
+echo -n "module directory: "; set_color red; echo "$module"; set_color normal
+echo -n "entry point: "; set_color red; echo "$dynamic"; set_color normal
+echo -n "target directory: "; set_color red; echo "$target"; set_color normal
+echo -n "Body component: "; set_color red; echo -n "$Body"; set_color normal; echo " --  will pass $BODY to $module"
+echo -n "Helmet component: "; set_color red; echo -n "$Helmet"; set_color normal; echo " --  will pass $HELMET to $module"
+echo -n "Wrapper component: "; set_color red; echo -n "$Wrapper"; set_color normal; echo " --  will pass $WRAPPER to $module"
 echo
 echo "resetting or creating $target if it doesn't exist"
 mkdir -p $target
@@ -59,7 +59,11 @@ end
 echo
 
 for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*' ! -path './.*' ! -path './_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
-  echo "  > $path:"
+  echo -n "  > "
+  set_color -u white
+  echo -n "$path"
+  set_color normal
+  echo ":"
 
   set -x EMBED (realpath --relative-to=$module $path)
   if isroot $path
@@ -74,12 +78,20 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   registerdep $standalonepath $module/standalone.js
   registerdep $standalonepath $path
   registerdep $standalonepath $Wrapper
-  echo -n "    # standalone: '$standalonepath'"
+  echo -n "    # "
+  set_color brbrown
+  echo -n "standalone"
+  set_color normal
+  echo -n ": '$standalonepath'"
   if depschanged $standalonepath
     browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
+    set_color green
     echo ': done.'
+    set_color normal
   else
+    set_color blue
     echo ': already there.'
+    set_color normal
   end
 
   if isindex $path
@@ -99,12 +111,20 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   registerdep $staticpath $path
   registerdep $staticpath $Body
   registerdep $staticpath $Helmet
-  echo -n "    # static: '$staticpath'"
+  echo -n "    # "
+  set_color brbrown
+  echo -n "static"
+  set_color normal
+  echo -n ": '$staticpath'"
   if depschanged $staticpath
     node $module/static.js > $staticpath
+    set_color green
     echo ': done.'
+    set_color normal
   else
+    set_color blue
     echo ': already there.'
+    set_color normal
   end
 end
 
@@ -117,8 +137,13 @@ if depschanged $target/bundle.js
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
   eval $browserifyMain > $target/bundle.js
+  set_color green
+  echo "done."
+  set_color normal
 else
+  set_color blue
   echo "$target/bundle.js: main bundle doesn't need to be rebuilt."
+  set_color normal
 end
 echo
 echo "everything is done."
