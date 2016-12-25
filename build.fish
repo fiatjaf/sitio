@@ -4,21 +4,21 @@ set module (dirname (status -f))
 set here (dirname pwd)
 set target $here/_site
 set dynamic $module/dynamic.js
-set Body $here/Body.js
-set Helmet $here/Helmet.js
-set Wrapper $here/Wrapper.js
+set Body (find $here -maxdepth 1 -iregex '.*\(body\|content\|main\|app\.\).*' | head -n 1)
+set Helmet (find $here -maxdepth 1 -iregex '.*\(head\|helmet\).*' | head -n 1)
+set Wrapper (find $here -maxdepth 1 -iregex '.*wrap.*' | head -n 1)
 
 set -x BODY (realpath --relative-to=$here $Body)
 set -x HELMET (realpath --relative-to=$here $Helmet)
 set -x WRAPPER (realpath --relative-to=$here $Wrapper)
 
-echo -n "here: "; set_color red; echo "$here"; set_color normal
-echo -n "module directory: "; set_color red; echo "$module"; set_color normal
-echo -n "entry point: "; set_color red; echo "$dynamic"; set_color normal
-echo -n "target directory: "; set_color red; echo "$target"; set_color normal
-echo -n "Body component: "; set_color red; echo -n "$Body"; set_color normal; echo " --  will pass $BODY to $module"
-echo -n "Helmet component: "; set_color red; echo -n "$Helmet"; set_color normal; echo " --  will pass $HELMET to $module"
-echo -n "Wrapper component: "; set_color red; echo -n "$Wrapper"; set_color normal; echo " --  will pass $WRAPPER to $module"
+echo -n "here: "; set_color magenta; echo "$here"; set_color normal
+echo -n "module directory: "; set_color magenta; echo "$module"; set_color normal
+echo -n "entry point: "; set_color magenta; echo "$dynamic"; set_color normal
+echo -n "target directory: "; set_color magenta; echo "$target"; set_color normal
+echo -n "Body component: "; set_color magenta; echo -n "$Body"; set_color normal; echo " --  will pass $BODY to $module"
+echo -n "Helmet component: "; set_color magenta; echo -n "$Helmet"; set_color normal; echo " --  will pass $HELMET to $module"
+echo -n "Wrapper component: "; set_color magenta; echo -n "$Wrapper"; set_color normal; echo " --  will pass $WRAPPER to $module"
 echo
 echo "resetting or creating $target if it doesn't exist"
 mkdir -p $target
