@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 
-set module (dirname (status -f))
+set module (dirname (readlink -m (status -f)))
 set here (dirname pwd)
 set target $here/_site
 set dynamic $module/dynamic.js
