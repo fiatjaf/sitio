@@ -29,9 +29,10 @@ set -x NODE_PATH "$here:$here/node_modules:$module/node_modules"
 
 echo
 echo "extracting metadata from files"
-set -g metapages '{}'
+set -g pagesmeta '{}'
 for path in $filestobuild
-  set -x FILEPATH (realpath --relative-to=$module $path)
+  set -x FILEPATH $path
+  set -x FILELOCATION (realpath --relative-to=$module $path)
   set -x PATHNAME (pathname $path)
   set tmppath (path_tmp $path)
   set metapath "$tmppath"meta.json
@@ -42,9 +43,9 @@ for path in $filestobuild
   set_color normal
   echo -n " to $tmppath"
   mkdir -p (dirname $tmppath)
-  registerdep $tmppath $path
-  registerdep $tmppath $module/extractmeta.js
-  if depschanged $tmppath
+  registerdep $metapath $path
+  registerdep $metapath $module/extractmeta.js
+  if depschanged $metapath
     set meta (node $module/extractmeta.js)
     echo $meta > $metapath
     set_color green; echo ' done.'; set_color normal
@@ -52,14 +53,14 @@ for path in $filestobuild
     set meta (cat $metapath)
     set_color blue; echo ' already there.'; set_color normal
   end
-  set -g metapages (echo $metapages | jq -c --arg meta $meta --arg path $path '.[$path] = ($meta | fromjson)')
+  set -g pagesmeta (echo $pagesmeta | jq -c --arg meta $meta --arg key $PATHNAME '.[$key] = ($meta | fromjson)')
 end
 
 echo
 echo "making standalone bundles for all pages (to be loaded asynchronously) and putting those on $target at the same time creating the static html for each page."
 echo
 
-set -x ALLPAGESMETA (echo $metapages | jq -c .)
+set -x ALLPAGESMETA (echo $pagesmeta | jq -c .)
 
 for path in $filestobuild
   echo -n "  > "
@@ -69,7 +70,7 @@ for path in $filestobuild
   echo ":"
 
   set -x CONTENTPATH (path_tmp $path)content.js
-  set -x META (echo $metapages | jq -c --arg path $path '.[$path]')
+  set -x META (echo $pagesmeta | jq -c --arg key (pathname $path) '.[$key]')
 
   set standalonepath (path_standalone $path)
   mkdir -p (dirname $standalonepath)

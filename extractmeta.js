@@ -1,18 +1,17 @@
 const fs = require('fs')
 const matter = require('gray-matter')
 
-var filename = process.env.FILEPATH
-var raw = fs.readFileSync(filename, 'utf-8')
+var raw = fs.readFileSync(process.env.FILELOCATION, 'utf-8')
 var content
 try {
-  content = require(filename)
+  content = require(process.env.FILELOCATION)
 } catch (e) {
   content = raw
 }
-var ext = filename.split('.').slice(-1)[0]
+var ext = process.env.FILELOCATION.split('.').slice(-1)[0]
 
 var meta = {
-  filename: filename,
+  filename: process.env.FILEPATH,
   pathname: process.env.PATHNAME
 }
 

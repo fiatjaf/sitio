@@ -27,7 +27,7 @@ var Main = React.createClass({
 
   getInitialState () {
     return {
-      location: this.props.pathname,
+      location: this.props.location,
       page: this.props.page,
       meta: this.props.meta,
       pages: this.props.pages
