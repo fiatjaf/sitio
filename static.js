@@ -6,34 +6,26 @@ var e = React.createElement
 var Main = React.createClass({
   displayName: 'ReactSiteMain',
 
-  getInitialState () {
-    return {
-      location: {
-        pathname: this.props.pathname,
-        search: ''
-      },
-      page: this.props.page
-    }
-  },
-
   render () {
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 
-    return e(Body, {
-      location: this.props.location
-    },
-      makeHelmet(this.state),
-      e(this.state.page, this.state)
+    return e(Body, this.props,
+      e(makeHelmet, this.props),
+      e(this.props.page, this.props)
     )
   }
 })
 
-var output = renderToString(React.createElement(Main, {
+var output = renderToString(e(Main, {
   page: require(process.env.STANDALONE),
-  pathname: process.env.PATHNAME
+  meta: require(process.env.STANDALONE).meta,
+  pages: JSON.parse(process.env.ALLPAGESMETA),
+  location: {
+    pathname: process.env.PATHNAME,
+    search: ''
+  }
 }))
-
 var head = Helmet.rewind()
 
 process.stdout.write(

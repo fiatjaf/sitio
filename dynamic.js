@@ -27,11 +27,10 @@ var Main = React.createClass({
 
   getInitialState () {
     return {
-      location: {
-        pathname: this.props.pathname,
-        search: ''
-      },
-      page: this.props.page
+      location: this.props.pathname,
+      page: this.props.page,
+      meta: this.props.meta,
+      pages: this.props.pages
     }
   },
 
@@ -59,10 +58,8 @@ var Main = React.createClass({
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 
-    return e(Body, {
-      location: this.props.location
-    },
-      makeHelmet(this.state),
+    return e(Body, this.state,
+      e(makeHelmet, this.state),
       e(this.state.page, this.state)
     )
   }
@@ -73,6 +70,9 @@ amd.require([standaloneURL(window.location)], function (page) {
     page: page,
     meta: page.meta,
     pages: allpages,
-    pathname: window.location.pathname
+    location: {
+      pathname: window.location.pathname,
+      search: ''
+    }
   }), document.getElementById('react-mount'))
 })

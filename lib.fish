@@ -28,8 +28,8 @@ function pathname
     echo "/$dirpath/"
   end
 end
-function path_content
-  echo $tempdir(pathname $argv[1])content.js
+function path_tmp
+  echo $tempdir(pathname $argv[1])
 end
 function path_static
   if isindex $argv[1]

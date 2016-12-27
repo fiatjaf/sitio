@@ -33,12 +33,26 @@ set -g metapages '{}'
 for path in $filestobuild
   set -x FILEPATH (realpath --relative-to=$module $path)
   set -x PATHNAME (pathname $path)
-  set -x CONTENTPATH (path_content $path)
-  set_color purple
-  echo "  $path"
+  set tmppath (path_tmp $path)
+  set metapath "$tmppath"meta.json
+  set -x CONTENTPATH "$tmppath"content.js
+  set_color -u
+  set_color white
+  echo -n "$path"
   set_color normal
-  mkdir -p (dirname $CONTENTPATH)
-  set -g metapages (echo $metapages | jq -c --arg meta (node $module/extractmeta.js) --arg path $path '.[$path] = ($meta | fromjson)')
+  echo -n " to $tmppath"
+  mkdir -p (dirname $tmppath)
+  registerdep $tmppath $path
+  registerdep $tmppath $module/extractmeta.js
+  if depschanged $tmppath
+    set meta (node $module/extractmeta.js)
+    echo $meta > $metapath
+    set_color green; echo ' done.'; set_color normal
+  else
+    set meta (cat $metapath)
+    set_color blue; echo ' already there.'; set_color normal
+  end
+  set -g metapages (echo $metapages | jq -c --arg meta $meta --arg path $path '.[$path] = ($meta | fromjson)')
 end
 
 echo
@@ -54,7 +68,7 @@ for path in $filestobuild
   set_color normal
   echo ":"
 
-  set -x CONTENTPATH (path_content $path)
+  set -x CONTENTPATH (path_tmp $path)content.js
   set -x META (echo $metapages | jq -c --arg path $path '.[$path]')
 
   set standalonepath (path_standalone $path)
@@ -70,13 +84,9 @@ for path in $filestobuild
   echo -n ": '$standalonepath'"
   if depschanged $standalonepath
     browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] $module/standalone.js > $standalonepath
-    set_color green
-    echo ': done.'
-    set_color normal
+    set_color green; echo ': done.'; set_color normal
   else
-    set_color blue
-    echo ': already there.'
-    set_color normal
+    set_color blue; echo ': already there.'; set_color normal
   end
 
   set staticpath (path_static $path)
