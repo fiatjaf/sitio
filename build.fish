@@ -1,12 +1,13 @@
 #!/usr/bin/env fish
 
 set module (dirname (readlink -m (status -f)))
-set here (dirname pwd)
-set target $here/_site
-set dynamic $module/dynamic.js
+source $module/lib.fish
+
 set Body (find $here -maxdepth 1 -iregex '.*\(body\|content\|main\|app\.\).*' | head -n 1)
 set Helmet (find $here -maxdepth 1 -iregex '.*\(head\|helmet\).*' | head -n 1)
 set Wrapper (find $here -maxdepth 1 -iregex '.*wrap.*' | head -n 1)
+set filestobuild (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path "$here/node_modules/*" ! -path "$here/.*" ! -path "$here/_site/*" ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
+set tempdir (tmpdir)
 
 set -x BODY (realpath --relative-to=$here $Body)
 set -x HELMET (realpath --relative-to=$here $Helmet)
@@ -16,70 +17,47 @@ echo -n "here: "; set_color magenta; echo "$here"; set_color normal
 echo -n "module directory: "; set_color magenta; echo "$module"; set_color normal
 echo -n "entry point: "; set_color magenta; echo "$dynamic"; set_color normal
 echo -n "target directory: "; set_color magenta; echo "$target"; set_color normal
-echo -n "Body component: "; set_color magenta; echo -n "$Body"; set_color normal; echo " --  will pass $BODY to $module"
-echo -n "Helmet component: "; set_color magenta; echo -n "$Helmet"; set_color normal; echo " --  will pass $HELMET to $module"
-echo -n "Wrapper component: "; set_color magenta; echo -n "$Wrapper"; set_color normal; echo " --  will pass $WRAPPER to $module"
+echo -n "temp dir for content modules: "; set_color magenta; echo "$tempdir"; set_color normal
+echo -n "Body component: "; set_color magenta; echo -n "$Body"; set_color normal; echo " -- will pass $BODY to $module"
+echo -n "Helmet component: "; set_color magenta; echo -n "$Helmet"; set_color normal; echo " -- will pass $HELMET to $module"
+echo -n "Wrapper component: "; set_color magenta; echo -n "$Wrapper"; set_color normal; echo " -- will pass $WRAPPER to $module"
 echo
 echo "resetting or creating $target if it doesn't exist"
 mkdir -p $target
 echo "adding $here, $here/node_modules and $module/node_modules to NODE_PATH"
 set -x NODE_PATH "$here:$here/node_modules:$module/node_modules"
-echo
-echo "making standalone bundles for all pages (to be loaded asynchronously) and putting those on $target at the same time creating the static html for each page."
 
-function isindex
-  set noext (string match -r '\/([^./]+)\.\w+' $argv[1] | tail -n 1)
-  return ( [ "$noext" = 'index' ] )
-end
-function isroot
-  set parts (string split -m 1 --right '/' $argv[1])
-  if string match -r '^index\.\w*$' $parts[2] > /dev/null
-    if [ $parts[1] = $here ]
-      return 0
-    end
-  end
-  return 1
-end
-function max
-  echo $argv | tr " " "\n" | sort -nr | head -n 1
-end
-function filedate
-  if [ -s $argv[1] ]
-    date -r $argv[1] +%s
-  else
-    echo 0
-  end
-end
-function registerdep
-  set fileid (filedate $argv[1])
-  set dep $argv[2]
-  set deparrayname "deps$fileid"
-  set -g $deparrayname $$deparrayname (filedate $dep)
-end
-function depschanged
-  set fileid (filedate $argv[1])
-  set deparrayname "deps$fileid"
-  return ( [ (max $$deparrayname) -gt $fileid ] )
+echo
+echo "extracting metadata from files"
+set -g metapages '{}'
+for path in $filestobuild
+  set -x FILEPATH (realpath --relative-to=$module $path)
+  set -x PATHNAME (pathname $path)
+  set -x CONTENTPATH (path_content $path)
+  set_color purple
+  echo "  $path"
+  set_color normal
+  mkdir -p (dirname $CONTENTPATH)
+  set -g metapages (echo $metapages | jq -c --arg meta (node $module/extractmeta.js) --arg path $path '.[$path] = ($meta | fromjson)')
 end
 
 echo
+echo "making standalone bundles for all pages (to be loaded asynchronously) and putting those on $target at the same time creating the static html for each page."
+echo
 
-for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*' ! -path './.*' ! -path './_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
+set -x ALLPAGESMETA (echo $metapages | jq -c .)
+
+for path in $filestobuild
   echo -n "  > "
   set_color -u white
   echo -n "$path"
   set_color normal
   echo ":"
 
-  set -x EMBED (realpath --relative-to=$module $path)
-  if isroot $path
-    set jspath (string replace -r -a '\.\w*$' '.js' $path)
-  else if isindex $path
-    set jspath (string replace -r -a '\/index\.\w*$' '.js' $path)
-  else
-    set jspath (string replace -r -a '\.\w*$' '.js' $path)
-  end
-  set standalonepath (string replace -r -a '^\.' "$target" $jspath)
+  set -x CONTENTPATH (path_content $path)
+  set -x META (echo $metapages | jq -c --arg path $path '.[$path]')
+
+  set standalonepath (path_standalone $path)
   mkdir -p (dirname $standalonepath)
   registerdep $standalonepath $path
   registerdep $standalonepath $Wrapper
@@ -91,7 +69,7 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
   set_color normal
   echo -n ": '$standalonepath'"
   if depschanged $standalonepath
-    browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] -t [ $module/node_modules/stringify --extensions [.md .txt] ] $module/standalone.js > $standalonepath
+    browserify --standalone doesntmatter --no-bundle-external --exclude $WRAPPER -t [ $module/node_modules/envify ] $module/standalone.js > $standalonepath
     set_color green
     echo ': done.'
     set_color normal
@@ -101,18 +79,8 @@ for path in (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path './node_modules/*
     set_color normal
   end
 
-  if isindex $path
-    set htmlpath (string replace -r -a '\.\w*$' '.html' $path)
-  else
-    set htmlpath (string replace -r -a '\.\w*$' '/index.html' $path)
-  end
-  set staticpath (string replace -r -a '^\.' "$target" $htmlpath)
+  set staticpath (path_static $path)
   set -x STANDALONE (realpath --relative-to=$module $standalonepath)
-  if isroot $path
-    set -x PATHNAME /
-  else
-    set -x PATHNAME /$prepathname/
-  end
   mkdir -p (dirname $staticpath)
   registerdep $staticpath $path
   registerdep $staticpath $Body
@@ -143,7 +111,7 @@ registerdep $target/bundle.js $Helmet
 registerdep $target/bundle.js $module
 registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
-  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --debug -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
+  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml --debug -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
   eval $browserifyMain > $target/bundle.js

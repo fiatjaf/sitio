@@ -8,6 +8,8 @@ var catchLinks = require('catch-links')
 window.define = amd.define.bind(amd)
 window.define.amd = true
 
+var allpages = JSON.parse(process.env.ALLPAGESMETA)
+
 function standaloneURL (location) {
   if (location.pathname === '/') {
     return '/index.js'
@@ -41,7 +43,9 @@ var Main = React.createClass({
       amd.require([standaloneURL(location)], function (page) {
         self.setState({
           location: location,
-          page: page
+          page: page,
+          meta: page.meta,
+          pages: allpages
         })
       })
     })
@@ -67,6 +71,8 @@ var Main = React.createClass({
 amd.require([standaloneURL(window.location)], function (page) {
   render(React.createElement(Main, {
     page: page,
+    meta: page.meta,
+    pages: allpages,
     pathname: window.location.pathname
   }), document.getElementById('react-mount'))
 })

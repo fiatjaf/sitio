@@ -25,6 +25,7 @@
   "homepage": "https://github.com/fiatjaf/react-site#readme",
   "dependencies": {
     "catch-links": "^2.0.1",
+    "gray-matter": "^2.1.0",
     "history": "^4.5.0",
     "micro-amd": "^1.2.3",
     "react": "^15.4.1",
@@ -33,10 +34,7 @@
     "react-router": "^3.0.0"
   },
   "devDependencies": {
-    "aliasify": "^2.1.0",
     "browserify": "^13.1.1",
-    "envify": "^4.0.0",
-    "recursive-readdir": "^2.1.0",
-    "stringify": "^5.1.0"
+    "envify": "^4.0.0"
   }
 }

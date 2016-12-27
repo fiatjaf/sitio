@@ -1,6 +1,7 @@
 var makeWrapper = require(process.env.WRAPPER)
 
-module.exports = makeWrapper({
-  filename: process.env.EMBED,
-  embedded: require(process.env.EMBED)
-})
+var meta = JSON.parse(process.env.META)
+var content = require(process.env.CONTENTPATH)
+
+module.exports = makeWrapper(meta, content)
+module.exports.meta = meta
