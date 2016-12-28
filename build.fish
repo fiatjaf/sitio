@@ -3,9 +3,9 @@
 set module (dirname (readlink -m (status -f)))
 source $module/lib.fish
 
-set Body (find $here -maxdepth 1 -iregex '.*\(body\|content\|main\|app\.\).*' | head -n 1)
-set Helmet (find $here -maxdepth 1 -iregex '.*\(head\|helmet\).*' | head -n 1)
-set Wrapper (find $here -maxdepth 1 -iregex '.*wrap.*' | head -n 1)
+set Body (find $here -maxdepth 1 -iregex '.*\(body\|content\|main\|app\.\).*' ! -path '*/.*' | head -n 1)
+set Helmet (find $here -maxdepth 1 -iregex '.*\(head\|helmet\).*' ! -path '*/.*' | head -n 1)
+set Wrapper (find $here -maxdepth 1 -iregex '.*wrap.*' ! -path '*/.*' | head -n 1)
 set filestobuild (find $here -iregex '.*\.\(js\|md\|txt\)$' ! -path "$here/node_modules/*" ! -path "$here/.*" ! -path "$here/_site/*" ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
 set tempdir (tmpdir)
 
