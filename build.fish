@@ -4,7 +4,7 @@ set module (dirname (readlink -m (status -f)))
 if [ "$argv[1]" = 'live' ]
   source $module/lib.fish live
   source $module/vars.fish live
-  set -x LIVE true
+  set -x NODE_ENV development
 else
   source $module/lib.fish
   source $module/vars.fish
@@ -111,10 +111,16 @@ registerdep $target/bundle.js $Helmet
 registerdep $target/bundle.js $module
 registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
-  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER --arg LIVE "$LIVE" -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if $LIVE then "--debug" else "" end) -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
+  set browserifyMain ( jq -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if "'$NODE_ENV'" != "production" then "--debug" else "" end) -t '$module'/node_modules/envify '$dynamic' -r '$WRAPPER' -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
-  eval $browserifyMain > $target/bundle.js
+  eval "$browserifyMain" > $target/bundle.js
+  if [ "$NODE_ENV" = 'production' ]
+    echo
+    echo "minifying..."
+    eval "$module/node_modules/.bin/uglifyjs $target/bundle.js --compress --screw-ie8 --mangle" > $target/bundle.min.js 2> /dev/null
+    mv $target/bundle.min.js $target/bundle.js
+  end
   set_color green
   echo "done."
   set_color normal

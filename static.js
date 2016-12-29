@@ -6,7 +6,7 @@ var e = React.createElement
 var Main = React.createClass({
   displayName: 'ReactSiteMain',
 
-  render () {
+  render: function () {
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 

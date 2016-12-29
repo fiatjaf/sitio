@@ -22,9 +22,9 @@ set module (dirname (readlink -m (status -f)))
 
 switch $argv[1]
   case 'build'
-    fish $module/build.fish $argv
+    eval "$module/build.fish prod"
   case 'serve'
-    fish $module/serve.fish $argv
+    eval "$module/serve.fish live"
   case '--help'
     help
     exit 0

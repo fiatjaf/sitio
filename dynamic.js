@@ -17,7 +17,7 @@ function standaloneURL (location) {
   } else {
     url = location.pathname.slice(0, -1) + '.js'
   }
-  if (process.env.LIVE) {
+  if (process.env.NODE_ENV !== 'production') {
     url += '?t=' + Date.now()
   }
   return url
@@ -30,7 +30,7 @@ var history = createHistory({
 var Main = React.createClass({
   displayName: 'ReactSiteMain',
 
-  getInitialState () {
+  getInitialState: function () {
     return {
       location: this.props.location,
       page: this.props.page,
@@ -39,7 +39,7 @@ var Main = React.createClass({
     }
   },
 
-  componentDidMount () {
+  componentDidMount: function () {
     var self = this
 
     history.listen(function (location) {
@@ -59,7 +59,7 @@ var Main = React.createClass({
     })
   },
 
-  render () {
+  render: function () {
     var Body = require(process.env.BODY)
     var makeHelmet = require(process.env.HELMET)
 
