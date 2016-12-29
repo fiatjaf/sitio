@@ -89,3 +89,7 @@ If you do not have [fish shell](https://fishshell.com/) you can't use this (of c
 The build script also needs [jq](https://stedolan.github.io/jq/manual/), the CLI tool that does magic with JSON. If you don't have it, you should, it will make your life better every time you do any JSON work, so please install it globally. `sudo apt-get install jq` should work.
 
 For the live-rebuilding we require you to have [entr](http://entrproject.org/) which you can probably install with `sudo apt-get install entr` or similar command.
+
+### Examples
+
+ - [inflação.org](https://inflacao.org/) - [GitHub](https://github.com/fiatjaf/inflacao.org)
