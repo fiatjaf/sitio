@@ -8,7 +8,7 @@ set -x BODY (realpath --relative-to=$here $Body)
 set -x HELMET (realpath --relative-to=$here $Helmet)
 set -x WRAPPER (realpath --relative-to=$here $Wrapper)
 
-if [ ! "$argv[1]" = 'noprint' ]
+if [ ! "$argv[1]" = 'live' ]
   echo -n "here: "; set_color magenta; echo "$here"; set_color normal
   echo -n "module directory: "; set_color magenta; echo "$module"; set_color normal
   echo -n "entry point: "; set_color magenta; echo "$dynamic"; set_color normal

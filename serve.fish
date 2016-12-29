@@ -1,15 +1,15 @@
 #!/usr/bin/env fish
 
 set module (dirname (readlink -m (status -f)))
-source $module/lib.fish
-source $module/vars.fish
+source $module/lib.fish live
+source $module/vars.fish live
 
 echo "watching $filestobuild..."
 set -x module $module
 set -x port 6464
 eval "$module/node_modules/.bin/static $target -a 0.0.0.0 -c 1 -p $port &"
 string replace ' ' '\n' $filestobuild | entr fish -c '
-if eval $module/build.fish noprint
+if eval $module/build.fish live
   echo
   set_color green
   echo "site built."

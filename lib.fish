@@ -80,3 +80,7 @@ function tmpdir
     end
   end
 end
+
+if [ "$argv[1]" = 'live' ]
+  set target (tmpdir)/_build
+end

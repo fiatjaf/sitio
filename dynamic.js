@@ -11,11 +11,16 @@ window.define.amd = true
 var allpages = JSON.parse(process.env.ALLPAGESMETA)
 
 function standaloneURL (location) {
+  var url
   if (location.pathname === '/') {
-    return '/index.js'
+    url = '/index.js'
   } else {
-    return location.pathname.slice(0, -1) + '.js'
+    url = location.pathname.slice(0, -1) + '.js'
   }
+  if (process.env.LIVE) {
+    url += '?t=' + Date.now()
+  }
+  return url
 }
 
 var history = createHistory({

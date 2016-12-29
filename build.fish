@@ -1,8 +1,15 @@
 #!/usr/bin/env fish
 
 set module (dirname (readlink -m (status -f)))
-source $module/lib.fish
-source $module/vars.fish $argv
+if [ "$argv[1]" = 'live' ]
+  source $module/lib.fish live
+  source $module/vars.fish live
+  set -x LIVE true
+else
+  source $module/lib.fish
+  source $module/vars.fish
+  set -x NODE_ENV production
+end
 
 echo "resetting or creating $target if it doesn't exist"
 mkdir -p $target
@@ -104,7 +111,7 @@ registerdep $target/bundle.js $Helmet
 registerdep $target/bundle.js $module
 registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
-  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml --debug -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
+  set browserifyMain ( jq --arg dynamic $dynamic --arg module $module --arg WRAPPER $WRAPPER --arg LIVE "$LIVE" -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if $LIVE then "--debug" else "" end) -t $module/node_modules/envify $dynamic -r $WRAPPER -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
   eval $browserifyMain > $target/bundle.js
