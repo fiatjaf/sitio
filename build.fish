@@ -31,10 +31,10 @@ for path in $filestobuild
   echo -n "$path"
   set_color normal
   echo -n " to $tmppath"
-  mkdir -p (dirname $tmppath)
   registerdep $metapath $path
   registerdep $metapath $module/extractmeta.js
   if depschanged $metapath
+    mkdir -p $tmppath
     set meta (node $module/extractmeta.js)
     echo $meta > $metapath
     set_color green; echo ' done.'; set_color normal
@@ -123,5 +123,16 @@ else
   echo "$target/bundle.js: main bundle doesn't need to be rebuilt."
   set_color normal
 end
+
+echo
+echo 'copying static files to the build directory.'
+for file in $filestocopy
+  set dst (string replace $here $target $file)
+  if [ -d (dirname $dst) ]
+    echo "  $file to $dst"
+    cp $file $dst
+  end
+end
+
 echo
 echo "everything is done."
