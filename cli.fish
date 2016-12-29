@@ -5,11 +5,10 @@ function help
 usage: react-site <command> [options]
 commands:
     build - builds the site at the current directory, saves the output at ./_site/
-        options:
-            
+      will minify bundle.js and set NODE_ENV to 'production'.
     serve - starts watching files to rebuild the site and serving them. 
-        options:
-
+      will use --debug flag will be used and set NODE_ENV to 'development'.
+      doesn't do HMR, you still have to reload/reclick dependending on what you changed.
 more information may be available at https://github.com/fiatjaf/react-site"
 end
 
