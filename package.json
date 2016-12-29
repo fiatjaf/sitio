@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "React-based static site generator without Webpack.",
   "bin": {
-    "react-site": "./build.fish"
+    "react-site": "./cli.fish"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "browserify": "^13.1.1",
-    "envify": "^4.0.0"
+    "envify": "^4.0.0",
+    "node-static": "^0.7.9"
   }
 }
