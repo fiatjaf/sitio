@@ -111,7 +111,7 @@ registerdep $target/bundle.js $Helmet
 registerdep $target/bundle.js $module
 registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
-  set browserifyMain ( jq -rcs '.[0].dependencies * .[1].dependencies | keys | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if "'$NODE_ENV'" != "production" then "--debug" else "" end) -t '$module'/node_modules/envify '$dynamic' -r '$WRAPPER' -r \(.)"' $here/package.json $module/package.json )
+  set browserifyMain ( jq -rcs '(.[0].dependencies | keys) + ((.[1].dependencies | keys) - .[1].doNotBundle) | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if "'$NODE_ENV'" != "production" then "--debug" else "" end) -t '$module'/node_modules/envify '$dynamic' -r '$WRAPPER' -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
   eval "$browserifyMain" > $target/bundle.js

@@ -1,6 +1,6 @@
 {
   "name": "react-site",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "React-based static site generator without Webpack.",
   "bin": {
     "react-site": "./cli.fish"
@@ -31,12 +31,15 @@
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-helmet": "^3.2.3",
-    "react-router": "^3.0.0"
-  },
-  "devDependencies": {
     "browserify": "^13.1.1",
     "envify": "^4.0.0",
     "node-static": "^0.7.9",
     "uglify-js": "^2.7.5"
-  }
+  },
+  "doNotBundle": [
+    "browserify",
+    "envify",
+    "node-static",
+    "uglify-js"
+  ]
 }
