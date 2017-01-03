@@ -4,6 +4,12 @@ set projectname (string split / (pwd) | tail -n 1)
 set target $here/_site
 set dynamic $module/dynamic.js
 
+if [ -d $module/node_modules/.bin ]
+  set depdir $module/node_modules
+else
+  set depdir $here/node_modules
+end
+
 function isindex
   set noext (string match -r '\/([^./]+)\.\w+' $argv[1] | tail -n 1)
   return ( [ "$noext" = 'index' ] )

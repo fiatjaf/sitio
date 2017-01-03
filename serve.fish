@@ -7,7 +7,7 @@ source $module/vars.fish live
 echo "watching $filestobuild..."
 set -x module $module
 set -x port 6464
-eval "$module/node_modules/.bin/static $target -a 0.0.0.0 -c 1 -p $port &"
+eval "$depdir/.bin/static $target -a 0.0.0.0 -c 1 -p $port &"
 string replace ' ' '\n' $filestobuild | entr fish -c '
 if eval $module/build.fish live
   echo
