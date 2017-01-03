@@ -31,9 +31,9 @@ for path in $filestobuild
   echo -n "$path"
   set_color normal
   echo -n " to $tmppath"
-  registerdep $metapath $path
-  registerdep $metapath $module/extractmeta.js
-  if depschanged $metapath
+  registerdep $CONTENTPATH $path
+  registerdep $CONTENTPATH $module/extractmeta.js
+  if depschanged $CONTENTPATH
     mkdir -p $tmppath
     set meta (node $module/extractmeta.js)
     echo $meta > $metapath
