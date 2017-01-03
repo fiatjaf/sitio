@@ -39,6 +39,6 @@ process.stdout.write(
   head.noscript.toString() +
   head.script.toString() +
   '</head>' +
-  '<body><div id="react-mount">' + output + '</div></body>' +
+  '<body>' + output + '</body>' +
   '</html>'
 )

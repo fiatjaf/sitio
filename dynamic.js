@@ -79,5 +79,5 @@ amd.require([standaloneURL(window.location)], function (page) {
       pathname: window.location.pathname,
       search: ''
     }
-  }), document.getElementById('react-mount'))
+  }), document.body)
 })

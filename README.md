@@ -5,7 +5,7 @@ This is a static website generator that uses [React](https://facebook.github.io/
 
 This magnificent task is accomplished through the hackish usage of fish shell, [browserify](https://github.com/substack/node-browserify), [catch-links](https://www.npmjs.com/package/catch-links), [AMD](https://github.com/QubitProducts/micro-amd) loading and some nasty browserify tricks (like the -r flag and `NODE_PATH` environment variable).
 
-### What it does
+## What it does
 
 Imagine you have a site structure like
 
@@ -54,15 +54,15 @@ All the `.html` files are there for the first load at any route. After that, eve
 
 The `.js` files are small, they do not contain any external dependencies bundled with them, but only the code (or text) present on the source file for that page. All `node_modules` dependencies (as declared in `package.json`) will be bundled only once at `/bundle.js`, including the **wrapper**, the **helmet** and the **content** special modules.
 
-### How to use
+## How to use
 
-Install it with `npm install react-site` globally or locally in your site's directory. Then run it with `react-site build` (or `./node_modules/.bin/react-site build`). **react-site** treats your current directory to be the root of your site, and will save the built files under `./_site/`. It expects you to have 4 special files/modules:
+Install it with `npm install react-site` globally or locally in your site's directory. Then run it with `react-site` (or `./node_modules/.bin/react-site`). **react-site** treats your current directory to be the root of your site, and will save the built files under `./_site/`. It expects you to have 4 special files/modules:
 
   - **helmet** (any file named with "head" or "helmet" will work here, try `helmet.js`)
     - this file should `require('react-helmet')` and export a _React component_ that will and return a Helmet.
     - this Helmet component will be used to render your website's static `<head>` and update it as the client navigates.
   - **content** (any file with "body", "content" or "main" in the name will work, try `content.js`)
-    - this file should export _a React component_ that will draw the basic, static, site structure. Maybe you want a footer, a static header, whatever. You do it here. This will be rendered inside the first and only child of `<body>`, a `<div id="react-mount">`.
+    - this file should export _a React component_ that will draw the basic, static, site structure. Maybe you want a footer, a static header, whatever. You do it here. This will be rendered inside `<body>` (`document.body`).
     - this file will receive some `this.props.children`, which you must embed somewhere, because that is where the specific content of each page will be.
     - this file also has the duty to include `/bundle.js`, the script that makes all the client-side things work. If you do not include this the website will be a pure static-HTML website of the 90's.
   - **wrapper** (any file that has "wrap" in its name, try `wrapperFactory.js` or `makeWrapper.js`):
@@ -82,7 +82,20 @@ The components defined at **wrapper**, **helmet** and **content** will all recei
   - `.pages`: an object with all the metadata for all pages, keyed by `.pathname` (useful for generating indexes or sub-indexes).
   - `.location`: the `location` object from [history](https://www.npmjs.com/package/history).
 
-### External dependencies
+### Command-line usage:
+
+```
+react-site - simple and hackable static website generator with React and browserify.
+usage: react-site <command> [options]
+commands:
+    build - builds the site at the current directory, saves the output at ./_site/
+      will minify bundle.js and set NODE_ENV to 'production'.
+    serve - starts watching files to rebuild the site and serving them. 
+      will use --debug flag will be used and set NODE_ENV to 'development'.
+      doesn't do HMR, you still have to reload/reclick dependending on what you changed.
+```
+
+## External dependencies
 
 If you do not have [fish shell](https://fishshell.com/) you can't use this (of course you can install it and replace your current shell with it -- or just install it to run the build script, that will work too, `sudo apt-get install fish` or whatever).
 
