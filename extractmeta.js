@@ -1,7 +1,8 @@
 const fs = require('fs')
+const path = require('path')
 const matter = require('gray-matter')
 
-var raw = fs.readFileSync(process.env.FILELOCATION, 'utf-8')
+var raw = fs.readFileSync(path.join(__dirname, process.env.FILELOCATION), 'utf-8')
 var content
 try {
   content = require(process.env.FILELOCATION)
