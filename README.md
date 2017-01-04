@@ -103,6 +103,10 @@ The build script also needs [jq](https://stedolan.github.io/jq/manual/), the CLI
 
 For the live-rebuilding we require you to have [entr](http://entrproject.org/) which you can probably install with `sudo apt-get install entr` or similar command.
 
-### Examples
+## Examples
 
- - [inflação.org](https://inflacao.org/) - [GitHub](https://github.com/fiatjaf/inflacao.org)
+ - [inflação.org](https://inflacao.org/) ([source](https://github.com/fiatjaf/inflacao.org)) - with complicated React components and static markdown articles.
+
+## Caveats
+
+ - If you're using Cloudflare, their [auto-minification](https://support.cloudflare.com/hc/en-us/articles/200168196-How-do-I-minify-HTML-CSS-and-JavaScript-to-optimize-my-site-) feature may interfere with **react-site** generated Javascript and make everything fail without throwing errors to the console. It is horrible. Please turn off auto-minification.
