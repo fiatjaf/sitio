@@ -3,6 +3,7 @@ const path = require('path')
 const matter = require('gray-matter')
 
 var raw = fs.readFileSync(path.join(__dirname, process.env.FILELOCATION), 'utf-8')
+var stat = fs.statSync(path.join(__dirname, process.env.FILELOCATION))
 var content
 try {
   content = require(process.env.FILELOCATION)
@@ -13,15 +14,19 @@ var ext = process.env.FILELOCATION.split('.').slice(-1)[0]
 
 var meta = {
   filename: process.env.FILEPATH,
-  pathname: process.env.PATHNAME
+  pathname: process.env.PATHNAME,
+  title: process.env.PATHNAME.split('/').filter(x => x).slice(-1)[0],
+  date: (stat.birthtime < new Date(1972, 1, 1) ? stat.mtime : stat.birthtime).toISOString()
 }
 
 var contentpath = process.env.CONTENTPATH
 
 switch (ext) {
   case 'txt':
+  case 'text':
   case 'html':
   case 'md':
+  case 'mdown':
   case 'markdown':
     var p
     try {
