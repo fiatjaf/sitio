@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const matter = require('gray-matter')
+const toText = require('html-to-text')
 
 var raw = fs.readFileSync(path.join(__dirname, process.env.FILELOCATION), 'utf-8')
 var stat = fs.statSync(path.join(__dirname, process.env.FILELOCATION))
@@ -16,7 +17,8 @@ var meta = {
   filename: process.env.FILEPATH,
   pathname: process.env.PATHNAME,
   title: process.env.PATHNAME.split('/').filter(x => x).slice(-1)[0],
-  date: (stat.birthtime < new Date(1972, 1, 1) ? stat.mtime : stat.birthtime).toISOString()
+  date: (stat.birthtime < new Date(1972, 1, 1) ? stat.mtime : stat.birthtime).toISOString(),
+  summary: ''
 }
 
 var contentpath = process.env.CONTENTPATH
@@ -34,6 +36,12 @@ switch (ext) {
     } catch (e) {
       p = {content: '', data: {}}
     }
+
+    if (!p.data.summary) {
+      // let's try to extract a summary from the raw content
+      p.data.summary = extractSummary(p.content, ext)
+    }
+
     console.log(JSON.stringify(Object.assign(meta, p.data)))
     fs.writeFileSync(contentpath, `module.exports = ${JSON.stringify(p.content)}`, 'utf-8')
     break
@@ -48,4 +56,39 @@ switch (ext) {
   default:
     console.log(JSON.stringify(meta))
     fs.writeFileSync(contentpath, `module.exports = ${JSON.stringify(raw)}`, 'utf-8')
+}
+
+function extractSummary (content, ext) {
+  var text = ext === 'html'
+    ? toText.fromString(p.content, {ignoreHref: true, ignoreImage: true, wordwrap: 99999})
+    : p.content
+
+  var summary = ''
+
+  var chars = text.split('')
+  for (var i = 0; i < chars.length; i++) {
+    var ch = chars[i]
+    summary += ch
+    if (ch === '\n' && chars[i + 1] === '\n' && summary.length > 300) {
+      // paragraph
+      break
+    }
+    if (ch === ' ' && summary.length >= 450) {
+      // word break
+      break
+    }
+    if (summary.length > 500) {
+      // hard limit
+      summary = summary.slice(0, 450)
+      break
+    }
+  }
+
+  // remove header lines
+  summary = summary
+    .split('\n')
+    .filter(line => line !== line.toUpperCase())
+    .join('\n')
+
+  return summary
 }
