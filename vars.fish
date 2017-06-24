@@ -1,7 +1,7 @@
 set Body (find $here -maxdepth 1 -iregex '.*\(body\|content\|main\|app\.\).js' ! -path '*/.*' | head -n 1)
 set Helmet (find $here -maxdepth 1 -iregex '.*\(head\|helmet\).js' ! -path '*/.*' | head -n 1)
 set Wrapper (find $here -maxdepth 1 -iregex '.*wrap.js' ! -path '*/.*' | head -n 1)
-set filestobuild (find $here -iregex '.*\.\(js\|md\|txt\|html\|rst\|tex\|text\|latex\|asciidoc\|mdown\|markdown\)$' ! -path '*/node_modules/*' ! -path '*/.*' ! -path '*/_site/*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
+set filestobuild (find $here -iregex '.*\.\(js\|md\|txt\|html\|rst\|tex\|text\|latex\|asciidoc\|mdown\|markdown\)$' ! -path '*/node_modules/*' ! -path '*/.*' ! -path '*/_site/*' ! -name '_*' ! -path "$Body" ! -path "$Wrapper" ! -path "$Helmet")
 set filestocopy (find $here -iregex '.*\.\(3gp\|aac\|aif\|aiff\|atom\|avi\|bmp\|bz2\|conf\|css\|csv\|docx\|doc\|flv\|gif\|gz\|htm\|ico\|ics\|iso\|jar\|jpeg\|jpg\|json\|m3u\|m4a\|m4v\|manifest\|markdown\|mathml\|mid\|midi\|mov\|mp3\|mp4\|mp4v\|mpeg\|mpg\|odp\|ods\|odt\|oga\|ogg\|pdf\|png\|pps\|ppt\|ps\|psd\|qt\|rar\|rdf\|rss\|rtf\|svg\|svgz\|swf\|tar\|tbz\|text\|tif\|tiff\|torrent\|ttf\|wav\|webm\|wma\|wmv\|xls\|xml\|yaml\|yml\|zip\)$' ! -path '*/node_modules/*' ! -path '*/.*' ! -path '*/_site/*') $here/CNAME
 set tempdir (tmpdir)
 
