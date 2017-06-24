@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const matter = require('gray-matter')
 const toText = require('html-to-text')
+const child_process = require('child_process')
 
 var raw = fs.readFileSync(path.join(__dirname, process.env.FILELOCATION), 'utf-8')
 var stat = fs.statSync(path.join(__dirname, process.env.FILELOCATION))
@@ -16,9 +17,23 @@ var ext = process.env.FILELOCATION.split('.').slice(-1)[0]
 var meta = {
   filename: process.env.FILEPATH,
   pathname: process.env.PATHNAME,
-  title: process.env.PATHNAME.split('/').filter(x => x).slice(-1)[0],
-  date: (stat.birthtime < new Date(1972, 1, 1) ? stat.mtime : stat.birthtime).toISOString(),
-  summary: ''
+  title: process.env.PATHNAME.split('/').filter(x => x).slice(-1)[0]
+}
+
+try {
+  meta.date = child_process.execSync(
+    `git log --pretty=format:%ai -- '${process.env.FILEPATH}' | tail -n 1`,
+    {
+      encoding: 'utf8'
+    }
+  )
+  if (!meta.date) throw new Error("couldn't get date from git.")
+} catch (e) {
+  meta.date = (
+    stat.birthtime < new Date(1972, 1, 1)
+    ? stat.mtime
+    : stat.birthtime
+  ).toISOString()
 }
 
 var contentpath = process.env.CONTENTPATH
@@ -37,8 +52,8 @@ switch (ext) {
       p = {content: '', data: {}}
     }
 
-    if (!p.data.summary) {
-      // let's try to extract a summary from the raw content
+    if (!p.data.hasOwnProperty('summary')) {
+      // we'll try to extract a summary if it is not previously set
       p.data.summary = extractSummary(p.content, ext)
     }
 
