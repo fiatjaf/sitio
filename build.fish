@@ -38,6 +38,7 @@ for path in $filestobuild
     set meta (node $module/extractmeta.js)
     echo $meta > $metapath
     set_color green; echo ' done.'; set_color normal
+    echo '  ' (echo $meta | jq 'to_entries | map("\(.key)=\(.value)") | join(" ")')
   else
     set meta (cat $metapath)
     set_color blue; echo ' already there.'; set_color normal
