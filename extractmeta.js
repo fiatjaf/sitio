@@ -21,20 +21,22 @@ var meta = {
 }
 
 try {
-  meta.date = child_process.execSync(
+  meta.gitCreated = child_process.execSync(
     `git log --pretty=format:%ai -- '${process.env.FILEPATH}' | tail -n 1`,
-    {
-      encoding: 'utf8'
-    }
+    {encoding: 'utf8'}
   )
-  if (!meta.date) throw new Error("couldn't get date from git.")
-} catch (e) {
-  meta.date = (
-    stat.birthtime < new Date(1972, 1, 1)
-    ? stat.mtime
-    : stat.birthtime
-  ).toISOString()
+} catch (e) { delete meta.gitCreated }
+try {
+  meta.gitModified = child_process.execSync(
+    `git log --pretty=format:%ai -- '${process.env.FILEPATH}' | head -n 1`,
+    {encoding: 'utf8'}
+  )
+} catch (e) { delete meta.gitModified }
+
+if (stat.birthtime < new Date(1972, 1, 1)) {
+  meta.fsCreated = stat.birthtime
 }
+meta.fsModified = stat.mtime
 
 var contentpath = process.env.CONTENTPATH
 
