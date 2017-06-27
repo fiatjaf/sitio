@@ -1,5 +1,6 @@
 var React = require('react')
 var render = require('react-dom').render
+var createClass = require('create-react-class')
 var e = React.createElement
 var createHistory = require('history').createBrowserHistory
 var amd = require('micro-amd')()
@@ -27,7 +28,7 @@ var history = createHistory({
   basename: ''
 })
 
-var Main = React.createClass({
+var Main = createClass({
   displayName: 'ReactSiteMain',
 
   getInitialState: function () {

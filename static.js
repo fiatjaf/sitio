@@ -1,21 +1,17 @@
 var React = require('react')
 var renderToString = require('react-dom/server').renderToString
-var Helmet = require('react-helmet')
+var Helmet = require('react-helmet').default
 var e = React.createElement
 
-var Main = React.createClass({
-  displayName: 'ReactSiteMain',
+var Main = function ReactSiteMain (props) {
+  var Body = require(process.env.BODY)
+  var makeHelmet = require(process.env.HELMET)
 
-  render: function () {
-    var Body = require(process.env.BODY)
-    var makeHelmet = require(process.env.HELMET)
-
-    return e(Body, this.props,
-      e(makeHelmet, this.props),
-      e(this.props.page, this.props)
-    )
-  }
-})
+  return e(Body, props,
+    e(makeHelmet, props),
+    e(props.page, props)
+  )
+}
 
 var output = renderToString(e(Main, {
   page: require(process.env.STANDALONE),
@@ -26,7 +22,7 @@ var output = renderToString(e(Main, {
     search: ''
   }
 }))
-var head = Helmet.rewind()
+var head = Helmet.renderStatic()
 
 process.stdout.write(
   '<!doctype html>' +
