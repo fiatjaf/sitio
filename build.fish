@@ -134,11 +134,10 @@ end
 echo
 echo 'copying static files to the build directory.'
 for file in $filestocopy
-  set dst (string replace $here $target $file)
-  if [ -d (dirname $dst) ]
-    echo "  $file to $dst"
-    cp $file $dst
-  end
+  set dst (string replace "$here" "$target" "$file")
+  mkdir -p (dirname "$dst")
+  echo "  $file to $dst"
+  cp -r $file $dst
 end
 
 echo
