@@ -112,16 +112,10 @@ registerdep $target/bundle.js $Helmet
 registerdep $target/bundle.js $module
 registerdep $target/bundle.js $here/node_modules
 if depschanged $target/bundle.js
-  set browserifyMain ( jq -rcs '(.[0].dependencies | keys) + ((.[1].dependencies | keys) - .[1].doNotBundle) | join(" -r ") | "browserify --ignore coffee-script --ignore toml \(if "'$NODE_ENV'" != "production" then "--debug" else "" end) -t '$depdir'/envify '$dynamic' -r '$WRAPPER' -r \(.)"' $here/package.json $module/package.json )
+  set browserifyMain ( jq -rcs '(.[0].dependencies | keys) + ((.[1].dependencies | keys) - .[1].doNotBundle) | join(" -r ") | "browserify -o '$target'/bundle.js --ignore coffee-script --ignore toml \(if "'$NODE_ENV'" != "production" then "--debug" else "" end) -t '$depdir'/envify '$dynamic' -r '$WRAPPER' -r \(.)"' $here/package.json $module/package.json )
   echo "compiling main bundle: $target/bundle.js with command:"
   echo $browserifyMain
-  eval "$browserifyMain" > $target/bundle.js
-  if [ "$NODE_ENV" = 'production' ]
-    echo
-    echo "minifying..."
-    eval "$depdir/.bin/uglifyjs $target/bundle.js --compress --screw-ie8 --mangle" > $target/bundle.min.js 2> /dev/null
-    mv $target/bundle.min.js $target/bundle.js
-  end
+  eval "$browserifyMain"
   set_color green
   echo "done."
   set_color normal
