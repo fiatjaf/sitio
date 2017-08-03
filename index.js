@@ -85,7 +85,9 @@ module.exports.generatePage = function (pathname, componentpath, props) {
       head.noscript.toString() +
       head.script.toString() +
     '</head>' +
-    '<body>' + output + '</body>' +
+    '<body>' +
+      '<div id="react-site">' + output + '</div>' +
+    '</body>' +
   '</html>'
 
   mkdirp.sync(path.dirname(targetpath))

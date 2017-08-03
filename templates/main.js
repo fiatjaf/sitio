@@ -15,6 +15,8 @@ const body = process.env.body
 
 window.reactSite = process.env.globals
 
+const rootElement = document.getElementById('react-site')
+
 var history = createHistory({
   basename: ''
 })
@@ -45,7 +47,7 @@ var Main = createClass({
       })
     })
 
-    catchLinks(document.body, function (href) {
+    catchLinks(rootElement, function (href) {
       history.push(href)
     })
   },
@@ -71,5 +73,5 @@ amd.require([standaloneURL(window.location.pathname)], function (page) {
   render(React.createElement(Main, {
     component: page.component,
     props: props
-  }), document.body)
+  }), rootElement)
 })
