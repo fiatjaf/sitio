@@ -16,6 +16,7 @@ const {standaloneURL} = require('./utils')
 const targetdirname = yargs.argv['target-dir'] || process.env.TARGET_DIR || '_site'
 const targetdir = path.join(process.cwd(), targetdirname)
 
+const defaultPattern = '**/*.*(js|ts|jsx|tsx|md|html|txt|markdown|rst|text|text|latex|asciidoc)'
 const defaultIgnore = [
   '**/node_modules/**',
   '**/.*',
@@ -24,6 +25,7 @@ const defaultIgnore = [
   yargs.argv.helmet,
   yargs.argv.body
 ]
+
 var usedComponents = []
 
 var globals = {
@@ -41,9 +43,9 @@ module.exports.listFiles = function (options) {
   var {ignore} = options || {}
   ignore = ignore || []
 
-  return glob.sync(
-    '**/*.*(js|ts|jsx|tsx|md|html|txt|markdown|rst|text|text|latex|asciidoc)'
-  , {
+  let pattern = options.pattern || defaultPattern
+
+  return glob.sync(pattern, {
     ignore: defaultIgnore.concat(ignore)
   })
     .map(extract)
