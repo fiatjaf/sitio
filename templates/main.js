@@ -13,15 +13,15 @@ window.define.amd = true
 const helmet = process.env.helmet
 const body = process.env.body
 
-window.reactSite = process.env.globals
-
-const rootElement = document.getElementById('react-site')
-
 var history = createHistory({
   basename: ''
 })
 
-var Main = createClass({
+window.reactSite = process.env.globals
+window.reactSite.utils = require(process.env.utils)
+window.reactSite.rootElement = document.getElementById('react-site')
+
+window.reactSite.Main = createClass({
   displayName: 'ReactSiteMain',
 
   getInitialState: function () {
@@ -47,7 +47,7 @@ var Main = createClass({
       })
     })
 
-    catchLinks(rootElement, function (href) {
+    catchLinks(window.reactSite.rootElement, function (href) {
       history.push(href)
     })
   },
@@ -70,8 +70,8 @@ amd.require([standaloneURL(window.location.pathname)], function (page) {
     search: ''
   }
 
-  render(React.createElement(Main, {
+  render(React.createElement(window.reactSite.Main, {
     component: page.component,
     props: props
-  }), rootElement)
+  }), window.reactSite.rootElement)
 })
