@@ -24,9 +24,12 @@ const defaultIgnore = [
 ]
 var usedComponents = []
 
-module.exports.init = function (options) {
+var globals = {
+  baseURL: process.env.BASE_URL || yargs.argv['base-url'] || ''
+}
+
+module.exports.init = function () {
   // cleanup and prepare the _site directory
-  options = options || {}
   rimraf.sync(path.join(targetdir, '*'))
   mkdirp.sync(targetdir)
 }
@@ -46,7 +49,7 @@ module.exports.listFiles = function (options) {
 module.exports.generatePage = function (pathname, componentpath, props) {
   console.log(`  > generating pages at ${pathname}`)
   console.log(`    - component: ${componentpath}`)
-  console.log(`    - props: ${Object.keys(props)}`)
+  console.log(`    - props: ${Object.keys(props).join(', ')}`)
   usedComponents.push(componentpath)
   let targetpath = path.join(process.cwd(), '_site', pathname, 'index.html')
 
@@ -100,7 +103,7 @@ module.exports.generatePage = function (pathname, componentpath, props) {
   )
   let br = b.bundle()
 
-  let targetjs = path.join(targetdir, standaloneURL(pathname, true))
+  let targetjs = path.join(targetdir, standaloneURL(pathname))
   let w = fs.createWriteStream(targetjs, {encoding: 'utf-8'})
   br.pipe(w)
   br.on('end', () =>
@@ -141,7 +144,8 @@ module.exports.end = function () {
     {
       utils: path.join(__dirname, 'utils'),
       body: yargs.argv.body,
-      helmet: yargs.argv.helmet
+      helmet: yargs.argv.helmet,
+      globals: globals
     }
   )
   b.require([

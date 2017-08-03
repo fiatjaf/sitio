@@ -13,6 +13,8 @@ window.define.amd = true
 const helmet = process.env.helmet
 const body = process.env.body
 
+window.reactSite = process.env.globals
+
 var history = createHistory({
   basename: ''
 })
