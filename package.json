@@ -22,8 +22,12 @@
   "license": "MIT",
   "dependencies": {
     "browserify": "^14.4.0",
+    "catch-links": "^2.0.1",
     "cp-file": "^4.2.0",
+    "envify": "^4.1.0",
     "glob": "^7.1.2",
+    "history": "^4.6.3",
+    "micro-amd": "^1.2.3",
     "mkdirp": "^0.5.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
