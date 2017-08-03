@@ -25,7 +25,8 @@ const defaultIgnore = [
 var usedComponents = []
 
 var globals = {
-  baseURL: process.env.BASE_URL || yargs.argv['base-url'] || ''
+  baseURL: process.env.BASE_URL || yargs.argv['base-url'] || '',
+  production: process.env.PRODUCTION || yargs.argv['production'] || false
 }
 
 module.exports.init = function () {
@@ -94,7 +95,8 @@ module.exports.generatePage = function (pathname, componentpath, props) {
     standalone: 'doesntmatter',
     ignoreMissing: true,
     bundleExternal: false,
-    paths: process.env.NODE_PATH.split(':')
+    paths: process.env.NODE_PATH.split(':'),
+    debug: !globals.production
   })
   b.exclude(componentpath)
   b.transform(
@@ -137,7 +139,8 @@ module.exports.end = function () {
   )
 
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
-    paths: process.env.NODE_PATH.split(':')
+    paths: process.env.NODE_PATH.split(':'),
+    debug: !globals.production
   })
   b.transform(
     'envify',

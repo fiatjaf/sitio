@@ -9,7 +9,7 @@ function standaloneURL (pathname) {
   }
 
   if (typeof window !== 'undefined') {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!window.reactSite.production) {
       url += '?t=' + Date.now()
     }
 
