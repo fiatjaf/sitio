@@ -13,11 +13,13 @@ const browserify = require('browserify')
 const extract = require('./extract')
 const {standaloneURL} = require('./utils')
 
-const targetdir = path.join(process.cwd(), '_site')
+const targetdirname = yargs.argv['target-dir'] || process.env.TARGET_DIR || '_site'
+const targetdir = path.join(process.cwd(), targetdirname)
+
 const defaultIgnore = [
   '**/node_modules/**',
   '**/.*',
-  '_site/**',
+  `${targetdirname}/**`,
   yargs.argv['$0'],
   yargs.argv.helmet,
   yargs.argv.body
@@ -25,8 +27,8 @@ const defaultIgnore = [
 var usedComponents = []
 
 var globals = {
-  baseURL: process.env.BASE_URL || yargs.argv['base-url'] || '',
-  production: process.env.PRODUCTION || yargs.argv['production'] || false
+  baseURL: yargs.argv['base-url'] || process.env.BASE_URL || '',
+  production: yargs.argv['production'] || process.env.PRODUCTION || false
 }
 
 module.exports.init = function () {
@@ -52,7 +54,7 @@ module.exports.generatePage = function (pathname, componentpath, props) {
   console.log(`    - component: ${componentpath}`)
   console.log(`    - props: ${Object.keys(props).join(', ')}`)
   usedComponents.push(componentpath)
-  let targetpath = path.join(process.cwd(), '_site', pathname, 'index.html')
+  let targetpath = path.join(targetdir, pathname, 'index.html')
 
   let staticprops = Object.assign({
     location: {
@@ -124,7 +126,7 @@ module.exports.copyStatic = function (patterns) {
         console.log(`  > copying static file ${filepath}.`)
         copy.sync(
           path.join(process.cwd(), filepath),
-          path.join(process.cwd(), '_site', filepath)
+          path.join(targetdir, filepath)
         )
       })
     )
