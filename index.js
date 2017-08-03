@@ -90,11 +90,12 @@ module.exports.generatePage = function (pathname, componentpath, props) {
   let b = browserify(path.join(__dirname, '/templates/standalone.js'), {
     standalone: 'doesntmatter',
     ignoreMissing: true,
-    bundleExternal: false
+    bundleExternal: false,
+    paths: process.env.NODE_PATH.split(':')
   })
   b.exclude(componentpath)
   b.transform(
-    path.join(__dirname, 'node_modules', 'envify'),
+    'envify',
     {props, componentpath}
   )
   let br = b.bundle()
@@ -132,9 +133,11 @@ module.exports.end = function () {
       .dependencies
   )
 
-  let b = browserify(path.join(__dirname, '/templates/main.js'))
+  let b = browserify(path.join(__dirname, '/templates/main.js'), {
+    paths: process.env.NODE_PATH.split(':')
+  })
   b.transform(
-    path.join(__dirname, 'node_modules', 'envify'),
+    'envify',
     {
       utils: path.join(__dirname, 'utils'),
       body: yargs.argv.body,
