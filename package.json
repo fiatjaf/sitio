@@ -1,6 +1,6 @@
 {
   "name": "react-site",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
   "bin": {

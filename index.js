@@ -104,7 +104,7 @@ module.exports.generatePage = function (pathname, componentpath, props) {
     paths: process.env.NODE_PATH.split(':'),
     debug: !globals.production
   })
-  b.exclude(componentpath)
+  b.external(componentpath)
   b.transform(
     'envify',
     {props, componentpath}
