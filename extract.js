@@ -32,6 +32,7 @@ module.exports = function (filepath) {
 
   var data = {
     ext: path.extname(filepath),
+    basename: path.basename(filepath),
     filepath,
     pathname,
     raw,
