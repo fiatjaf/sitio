@@ -54,7 +54,7 @@ module.exports.listFiles = function (options) {
 module.exports.generatePage = function (pathname, componentpath, props) {
   console.log(`  > generating pages at ${pathname}`)
   console.log(`    - component: ${componentpath}`)
-  console.log(`    - props: ${Object.keys(props).join(', ')}`)
+  console.log(`    - props: ${typeof props === 'object' ? Object.keys(props).join(', ') : props}`)
   usedComponents.push(componentpath)
   let targetpath = path.join(targetdir, pathname, 'index.html')
 
