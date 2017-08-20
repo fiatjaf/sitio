@@ -139,10 +139,13 @@ module.exports.copyStatic = function (patterns) {
 module.exports.end = function () {
   console.log('generating the JS bundle that puts everything together')
 
-  let pageExternalPackages = Object.keys(
-    require(path.join(process.cwd(), 'package.json'))
-      .dependencies
-  )
+  var pageExternalPackages = []
+  try {
+    pageExternalPackages = Object.keys(
+      require(path.join(process.cwd(), 'package.json'))
+        .dependencies
+    )
+  } catch (e) {}
 
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
     paths: process.env.NODE_PATH.split(':'),
