@@ -1,25 +1,25 @@
-[![npm package](https://img.shields.io/npm/v/react-site.svg?style=flat-square)](https://www.npmjs.org/package/react-site)
+[![npm package](https://img.shields.io/npm/v/sitio.svg?style=flat-square)](https://www.npmjs.org/package/sitio)
 ![powered by browserify badge](https://img.shields.io/badge/powered%20by-browserify-blue.svg)
 ![webpack-free badge](https://img.shields.io/badge/webpack-free-orange.svg)
 
-**react-site** is a static site generator that creates ultra fast and thin websites powered by [react](https://facebook.github.io/react/), so it supports isomorphic rendering and responsive clients.
+**sitio** is a static site generator that creates ultra fast and thin websites powered by [react](https://facebook.github.io/react/), so it supports isomorphic rendering and responsive clients.
 
 ## imperative
 
-**react-site** is imperative, instead of declarative. Most static site generators expect you to arrange files in some structure and spread data around them in some predefined way. You may also have to declare properties, settings and metadata in multiple places, then you run a single command `generate-my-site` and get the resulting html files. **react-site** is different, you instead just write a script that tells it to generate such and such html pages with such and such data, but it also provides helpers so you can have multiple markdown files, for example, and easily loop through them.
+**sitio** is imperative, instead of declarative. Most static site generators expect you to arrange files in some structure and spread data around them in some predefined way. You may also have to declare properties, settings and metadata in multiple places, then you run a single command `generate-my-site` and get the resulting html files. **sitio** is different, you instead just write a script that tells it to generate such and such html pages with such and such data, but it also provides helpers so you can have multiple markdown files, for example, and easily loop through them.
 
 ## api
 
-**react-site** provides 5 methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` just prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
+**sitio** provides 5 methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` just prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
 
 ## quick tutorial
 
-Here's a very simple site we can use **react-site** to generate. First we write a file `generate.js` with the following contents:
+Here's a very simple site we can use **sitio** to generate. First we write a file `generate.js` with the following contents:
 
 ```javascript
 # generate.js
 
-const {init, end, generatePage} = require('react-site')
+const {init, end, generatePage} = require('sitio')
 
 init()
 
@@ -75,7 +75,7 @@ module.exports = function Body (props) {
     ),
     React.createElement('header', {}, 'you are browsing the page ' + pathname),
     React.createElement('main', {}, props.children), // you must include props.children somewhere
-    React.createElement('footer', {}, 'this site was generated with react-site'),
+    React.createElement('footer', {}, 'this site was generated with sitio'),
     React.createElement('script', {src: '/bundle.js'}) // you must include /bundle.js at the bottom
   )
 }
@@ -102,10 +102,10 @@ module.exports = function Head (props) {
 }
 ```
 
-Now, finally we can generate the site. You must call your `react-site` executable, which is probably at `./node_modules/.bin/react-site` if you installed it with `npm install react-site`. That executable is only necessary because it sets the `NODE_PATH` environment variable, then it just calls your `generate.js` directly.
+Now, finally we can generate the site. You must call your `sitio` executable, which is probably at `./node_modules/.bin/sitio` if you installed it with `npm install sitio`. That executable is only necessary because it sets the `NODE_PATH` environment variable, then it just calls your `generate.js` directly.
 
 ```shell
-react-site generate.js --body=body.js --helmet=head.js
+sitio generate.js --body=body.js --helmet=head.js
 ```
 
 Considering the directory structure given by the 5 files above, it will generate the following at `./_site`:
@@ -130,17 +130,17 @@ For a blog you should also write an index that shows all the pages, that's just 
 
 ## faq
 
-  * **Why is this better than writing my own single-page application with React?** Because you get static files, in HTML, that work for clients without Javascript. Also, you can use **react-site** as a single-page application generator, since you can use super complex components at any route you want, the benefit is that you won't need a full-featured backend server for routing, since every route will have an `index.html` there waiting to be served you can just use a static server.
+  * **Why is this better than writing my own single-page application with React?** Because you get static files, in HTML, that work for clients without Javascript. Also, you can use **sitio** as a single-page application generator, since you can use super complex components at any route you want, the benefit is that you won't need a full-featured backend server for routing, since every route will have an `index.html` there waiting to be served you can just use a static server.
   * **Why is this better than writing my own HTML pages manually?** Because you get the nice, fast and lightweight browsing that does not mess with your history.
   * **Why is this better than any other static site generator?** Because of the above, and also because you can use complex rendering logic in React components at specific routes in any way you want. Not only that, you can also code certain pages of your mostly static site to have interactive React components or any single-page application features you want, all this combined with Markdown rendering, for example.
-  * **What goes in `bundle.js`?** Basically everything. Your `body` and `helmet` components, all `react-site` dependencies that must be used in client-side, all packages in the `.dependencies` of your `package.json`, all component files declared in `generatePage()` and their relative dependencies. `bundle.js` only needs to be loaded once (or you can opt to not load it at all,  if you just want a bare static site), so it is a good idea to include everything there and only some parameters in the dinamically loaded JS files corresponding to each different page of the site.
+  * **What goes in `bundle.js`?** Basically everything. Your `body` and `helmet` components, all `sitio` dependencies that must be used in client-side, all packages in the `.dependencies` of your `package.json`, all component files declared in `generatePage()` and their relative dependencies. `bundle.js` only needs to be loaded once (or you can opt to not load it at all,  if you just want a bare static site), so it is a good idea to include everything there and only some parameters in the dinamically loaded JS files corresponding to each different page of the site.
   * **What goes in each JS file corresponding to a page in the site?** Everything you pass to it in `generatePage()` (which will include, for example, full texts for blog posts) plus the name of the component that will be used to render it, also given in that function call. Since each of these pages may have lots of text contents, it doesn't make sense to include them all in a single bundle, as other React-based static site generators do. Loading them asynchronously is very fast since they come without HTML boilerplate.
   * **What if I want to use Babel, Buble or other preprocessors?** [browserify](https://github.com/substack/node-browserify) is used under the hood, and you can use [transforms](https://github.com/substack/node-browserify#browserifytransform) by specifying them in your `package.json`. Just remember that your code must be valid on Node.js, as it is run there to generate the static HTML before browserify transforms can do their job.
-  * **What if I want to render content from different or external sources?** That's a great use case for **react-site**. If you have content hosted in a headless CMS, a Google Document, a Trello browser or who-knows-what, then you can just write JS code at your `generate.js` to fetch the content from there and call `generatePage()` with it.
+  * **What if I want to render content from different or external sources?** That's a great use case for **sitio**. If you have content hosted in a headless CMS, a Google Document, a Trello browser or who-knows-what, then you can just write JS code at your `generate.js` to fetch the content from there and call `generatePage()` with it.
   * **How do I write the site to a different directory?** Pass `--target-dir=./dir` to the executable or set the `TARGET_DIR` environment variable.
   * **What else can I configure?** Really, you want more?
 
 ## troubleshooting
-  * **Everything is broken!** Sorry, I forgot to say that. Don't install `react` or `react-dom`. These are `react-site` dependencies and will be included by default. If you install them by your own horrible conflicts will happen. Please be aware that some bad React components installed from npm may depend explicitly on React and cause it to be installed too. Bad.
+  * **Everything is broken!** Sorry, I forgot to say that. Don't install `react` or `react-dom`. These are `sitio` dependencies and will be included by default. If you install them by your own horrible conflicts will happen. Please be aware that some bad React components installed from npm may depend explicitly on React and cause it to be installed too. Bad.
   * **My dependency is missing!** You must have a `package.json` with your dependencies listed at `.dependencies`. That's what happens when you install them with `npm install --save <depname>`.
   * **My site is being generated with sourcemaps!** This is not an error. It is a feature. If you want to turn it off pass `--production` to the executable. Or set the `PRODUCTION` environment variable.
