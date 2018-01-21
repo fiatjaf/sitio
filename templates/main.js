@@ -39,6 +39,7 @@ window.reactSite.Main = createClass({
       amd.require([standaloneURL(location.pathname)], function (page) {
         var props = page.props
         props.location = location
+        props.global = window.reactSite
 
         self.setState({
           component: page.component,
@@ -69,6 +70,7 @@ amd.require([standaloneURL(window.location.pathname)], function (page) {
     pathname: window.location.pathname,
     search: ''
   }
+  props.global = window.reactSite
 
   render(React.createElement(window.reactSite.Main, {
     component: page.component,

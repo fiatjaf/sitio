@@ -10,7 +10,7 @@
 
 ## api
 
-**sitio** provides 5 methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` just prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
+**sitio** provides 5 methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` takes optionally an object to be merged with the global object and prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
 
 ## quick tutorial
 
@@ -21,7 +21,7 @@ Here's a very simple site we can use **sitio** to generate. First we write a fil
 
 const {init, end, generatePage} = require('sitio')
 
-init()
+init({siteName: 'nothing'})
 
 generatePage('/', 'landing.js', {})
 generatePage('/contact/', 'contact.js', {})
@@ -95,7 +95,7 @@ module.exports = function Head (props) {
       {name: 'description', content: 'nothing at all'},
       {name: 'viewport', content: 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes'}
     ],
-    title: props.location.pathname + ' at my test site',
+    title: props.location.pathname + ' at ' + props.global.siteName,
     link: [],
     script: []
   })

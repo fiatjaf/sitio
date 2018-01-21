@@ -33,10 +33,15 @@ var globals = {
   production: yargs.argv['production'] || process.env.PRODUCTION || false
 }
 
-module.exports.init = function () {
+module.exports.init = function (globalProps = {}) {
   // cleanup and prepare the _site directory
   rimraf.sync(path.join(targetdir, '*'))
   mkdirp.sync(targetdir)
+
+  // setup global props
+  for (let k in globalProps) {
+    globals[k] = globalProps[k]
+  }
 }
 
 module.exports.listFiles = function (options) {
@@ -62,7 +67,8 @@ module.exports.generatePage = function (pathname, componentpath, props) {
     location: {
       pathname,
       search: ''
-    }
+    },
+    global: globals
   }, props)
 
   /* generating static HTML */
