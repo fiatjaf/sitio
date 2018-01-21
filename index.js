@@ -88,7 +88,7 @@ module.exports.generatePage = function (pathname, componentpath, props) {
       head.script.toString() +
     '</head>' +
     '<body>' +
-      '<div id="sitio">' + output + '</div>' +
+      output +
     '</body>' +
   '</html>'
 

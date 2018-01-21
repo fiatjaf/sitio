@@ -19,7 +19,7 @@ var history = createHistory({
 
 window.reactSite = process.env.globals
 window.reactSite.utils = require(process.env.utils)
-window.reactSite.rootElement = document.getElementById('sitio')
+window.reactSite.rootElement = document.body
 
 window.reactSite.Main = createClass({
   displayName: 'ReactSiteMain',
