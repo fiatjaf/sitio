@@ -1,6 +1,8 @@
 module.exports.standaloneURL = standaloneURL
 
 function standaloneURL (pathname) {
+  if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
+
   var url
   if (pathname === '/') {
     url = '/index.js'

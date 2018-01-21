@@ -58,6 +58,9 @@ module.exports.listFiles = function (options) {
 }
 
 module.exports.generatePage = function (pathname, componentpath, props) {
+  if (pathname[0] !== '/') pathname = '/' + pathname
+  if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
+
   console.log(`  > generating pages at ${pathname}`)
   console.log(`    - component: ${componentpath}`)
   console.log(`    - props: ${typeof props === 'object' ? Object.keys(props).join(', ') : props}`)
