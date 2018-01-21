@@ -18,6 +18,7 @@ var history = createHistory({
 })
 
 window.reactSite = process.env.globals
+window.reactSite.history = history
 window.reactSite.utils = require(process.env.utils)
 window.reactSite.rootElement = document.body
 
