@@ -30,6 +30,7 @@
     "history": "^4.6.3",
     "micro-amd": "^1.2.3",
     "mkdirp": "^0.5.1",
+    "pretty": "^2.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-helmet": "^5.2.0",

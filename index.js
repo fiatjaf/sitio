@@ -8,6 +8,7 @@ const React = require('react')
 const ReactHelmet = require('react-helmet').default
 const yargs = require('yargs')
 const renderToString = require('react-dom/server').renderToString
+const pretty = require('pretty')
 const browserify = require('browserify')
 
 const extract = require('./extract')
@@ -81,9 +82,8 @@ module.exports.generatePage = function (pathname, componentpath, props) {
     React.createElement(Component, staticprops)
   )
 
-  let output = renderToString(page)
   let head = ReactHelmet.renderStatic()
-  let html = '<!doctype html>' +
+  var html = '<!doctype html>' +
   '<html ' + head.htmlAttributes.toString() + '>' +
     '<head>' +
       head.meta.toString() +
@@ -94,9 +94,13 @@ module.exports.generatePage = function (pathname, componentpath, props) {
       head.script.toString() +
     '</head>' +
     '<body>' +
-      output +
+      renderToString(page) +
     '</body>' +
   '</html>'
+
+  if (!globals.production) {
+    html = pretty(html)
+  }
 
   mkdirp.sync(path.dirname(targetpath))
   fs.writeFileSync(targetpath, html, {encoding: 'utf-8'})
