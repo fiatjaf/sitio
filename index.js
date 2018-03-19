@@ -15,7 +15,9 @@ const extract = require('./extract')
 const {standaloneURL} = require('./utils')
 
 const targetdirname = yargs.argv['target-dir'] || process.env.TARGET_DIR || '_site'
-const targetdir = path.join(process.cwd(), targetdirname)
+const targetdir = path.isAbsolute(targetdirname)
+  ? targetdirname
+  : path.join(process.cwd(), targetdirname)
 
 const defaultPattern = '**/*.*(js|ts|jsx|tsx|md|html|txt|markdown|rst|text|text|latex|asciidoc)'
 const defaultIgnore = [
