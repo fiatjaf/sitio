@@ -1,6 +1,6 @@
 {
   "name": "sitio",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
   "bin": {
@@ -21,7 +21,7 @@
   "author": "Giovanni T. Parra",
   "license": "MIT",
   "dependencies": {
-    "browserify": "^14.4.0",
+    "browserify": "^16.1.1",
     "catch-links": "^2.0.1",
     "cp-file": "^4.2.0",
     "create-react-class": "^15.6.2",

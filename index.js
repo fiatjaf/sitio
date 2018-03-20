@@ -59,7 +59,19 @@ module.exports.listFiles = function (options) {
     .map(extract)
 }
 
-module.exports.generatePage = function (pathname, componentpath, props) {
+module.exports.plug = function (pluginName, rootPath, data, done) {
+  let gen = function (pathsuffix, component, props) {
+    generatePage(
+      path.join(path.join(rootPath, pathsuffix)),
+      path.join('node_modules', pluginName, component),
+      props
+    )
+  }
+  require(pluginName)(rootPath, gen, data, done)
+}
+
+module.exports.generatePage = generatePage
+function generatePage (pathname, componentpath, props) {
   if (pathname[0] !== '/') pathname = '/' + pathname
   if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
 
@@ -162,10 +174,13 @@ module.exports.end = function () {
     )
   } catch (e) {}
 
+  console.log('passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify')
+
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
     paths: process.env.NODE_PATH.split(':'),
     debug: !globals.production
   })
+
   b.transform(
     'envify',
     {
