@@ -14,7 +14,7 @@ module.exports = function (root, gen, {
   apiToken,
   postsPerPage = 7,
   excerpts = true
-}, done) {
+}, staticdir, done) {
   const t = new Trello(apiKey, apiToken)
   const listId = ref
   const ppp = postsPerPage

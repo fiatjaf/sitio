@@ -60,6 +60,11 @@ module.exports.listFiles = function (options) {
 }
 
 module.exports.plug = function (pluginName, rootPath, data, done) {
+  console.log(`  & running plugin ${pluginName} on ${rootPath}`)
+
+  let localtargetdir = path.join(targetdir, rootPath)
+  mkdirp.sync(localtargetdir)
+
   let gen = function (pathsuffix, component, props) {
     generatePage(
       path.join(path.join(rootPath, pathsuffix)),
@@ -67,7 +72,13 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
       props
     )
   }
-  require(pluginName)(rootPath, gen, data, done)
+  require(pluginName)(
+    rootPath, // the path of the site this plugin controls
+    gen, // wrapped version of generatePage
+    data, // arbitrary data
+    localtargetdir, // target dir for this plugin
+    done // plugins are async, must call this with (err) when done
+  )
 }
 
 module.exports.generatePage = generatePage
@@ -77,7 +88,17 @@ function generatePage (pathname, componentpath, props) {
 
   console.log(`  > generating pages at ${pathname}`)
   console.log(`    - component: ${componentpath}`)
-  console.log(`    - props: ${typeof props === 'object' ? Object.keys(props).join(', ') : props}`)
+  console.log(`    - props: ${typeof props === 'object'
+    ? Object.keys(props).map(k => `${k}=${typeof props[k] === 'string'
+      ? props[k].slice(0, 7).replace('\n', '\\n') + (props[k].length > 7 ? '…' : '')
+      : typeof props[k] === 'object'
+        ? typeof Array.isArray(props[k])
+          ? '[…]'
+          : '{…}'
+        : props[k]
+    }`).join(', ')
+    : props
+  }`)
   usedComponents.push(componentpath)
   let targetpath = path.join(targetdir, pathname, 'index.html')
 
