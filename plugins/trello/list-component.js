@@ -2,23 +2,28 @@ const h = require('react-hyperscript')
 
 module.exports = props => {
   return [
-    props.home
+    !props.name
       ? null
-      : h('header', {key: 'header'}, [
-        h('h1', [
-          h('a', {href: props.root}, props.name)
+      : (
+        h('header', {key: 'header'}, [
+          h('h1', [
+            h('a', {
+              href: props.basepath /* cannot be '' because when we're in /p/ urls this
+                                      must return to the beggining */
+            }, props.name)
+          ])
         ])
-      ]),
+      ),
     h('section', {key: 'section'}, [
       h('ul', props.cards.map(card =>
-        h('li', {key: card.shortLink}, [
+        h('li', {key: card.url}, [
           h('article', [
             h('header', [
-              card.cover && h('a', {href: `${props.root}/${card.slug}/`}, [
+              card.cover && h('a', {href: card.url}, [
                 h('img', {src: card.cover})
               ]),
               h('h1', [
-                h('a', {href: `${props.root}/${card.slug}/`}, card.name)
+                h('a', {href: card.url}, card.name)
               ]),
               h('aside', [
                 h('time', {dateTime: card.date}, card.shortDate)
@@ -36,12 +41,12 @@ module.exports = props => {
         h('ul', [
           h('li', [
             h('a', props.prev !== undefined
-              ? {rel: 'prev', href: `${props.root}/p/${props.prev}`}
+              ? {rel: 'prev', href: `${props.basepath}/p/${props.prev}`}
               : {}, '⇐')
           ]),
           h('li', [
             props.next !== undefined
-              ? h('a', {rel: 'next', href: `${props.root}/p/${props.next}`}, '⇒')
+              ? h('a', {rel: 'next', href: `${props.basepath}/p/${props.next}`}, '⇒')
               : ''
           ])
         ])
