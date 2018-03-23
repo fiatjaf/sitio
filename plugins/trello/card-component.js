@@ -1,4 +1,5 @@
 const h = require('react-hyperscript')
+const path = require('path')
 const md = require('markdown-it')({
   html: true,
   linkify: true,
@@ -31,7 +32,7 @@ module.exports = props => {
           h('time', {dateTime: props.date}, props.prettyDate),
           h('ul', props.labels.map(({slug, name, color}) =>
             h('li', {key: slug}, [
-              h('a', {rel: 'tag'},
+              h('a', {rel: 'tag', href: path.join(props.root, 'tag', slug)},
                 name || h('span', {
                   dangerouslySetInnerHTML: {__html: '&nbsp;&nbsp;&nbsp;'}
                 })

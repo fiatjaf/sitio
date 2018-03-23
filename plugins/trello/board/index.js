@@ -16,11 +16,10 @@ module.exports = function (root, gen, {
   excerpts = true
 }, staticdir, done) {
   const t = new Trello(apiKey, apiToken)
-  const boardId = ref.startsWith('http:')
+  const boardId = ref.startsWith('http')
     ? ref.split('/')[4]
     : ref
-  const ppp = typeof postsPerPage === 'string' ? JSON.parse(postsPerPage) : postsPerPage
-  excerpts = typeof postsPerPage === 'string' ? JSON.parse(excerpts) : excerpts
+  const ppp = postsPerPage
 
   parallel([
     done => t.get(`/1/boards/${boardId}/lists`, {
@@ -67,7 +66,7 @@ module.exports = function (root, gen, {
           // take this moment to set the list slug on the card object
           if (belongsHere) {
             card.listName = list.name
-            card.url = `${root}/${list.slug}/${card.slug}`
+            card.path = `/${list.slug}/${card.slug}`
           }
 
           return belongsHere
@@ -75,8 +74,9 @@ module.exports = function (root, gen, {
 
         var page = 1
         while ((page - 1) * ppp < cards.length) {
-          makePagination(gen, `${root}/${list.slug}`, cardsHere, page, {ppp, excerpts}, {
-            name: list.name
+          makePagination(gen, `/${list.slug}`, cardsHere, page, {ppp, excerpts}, {
+            name: list.name,
+            root
           })
           page++
         }
@@ -93,8 +93,9 @@ module.exports = function (root, gen, {
 
       var page = 1
       while ((page - 1) * ppp < cards.length) {
-        makePagination(gen, `${root}/${label.slug}`, cardsHere, page, {ppp, excerpts}, {
-          name: label.name
+        makePagination(gen, `/tag/${label.slug}`, cardsHere, page, {ppp, excerpts}, {
+          name: label.name,
+          root
         })
         page++
       }
@@ -107,7 +108,7 @@ module.exports = function (root, gen, {
 
     var page = 1
     while ((page - 1) * ppp < cards.length) {
-      makePagination(gen, root, homeCards, {ppp, excerpts})
+      makePagination(gen, '/', homeCards, page, {ppp, excerpts}, {root})
       page++
     }
 
@@ -115,11 +116,11 @@ module.exports = function (root, gen, {
     cards
       .filter(card => card.listName /* if there's no listName it means no */)
       .map(card => {
-        gen(card.url, '../card-component.js', cardPageProps(card))
+        gen(card.path, '../card-component.js', cardPageProps(card, {root}))
 
         // permalink based on card id or shortLink
-        gen(`/c/${card.id}`, '../redirect.js', {target: card.url})
-        gen(`/c/${card.shortLink}`, '../redirect.js', {target: card.url})
+        gen(`/c/${card.id}`, '../redirect.js', {target: card.path})
+        gen(`/c/${card.shortLink}`, '../redirect.js', {target: card.path})
       })
 
     // cards that are absolute pages

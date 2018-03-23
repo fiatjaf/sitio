@@ -61,6 +61,10 @@ module.exports.listFiles = function (options) {
 
 module.exports.plug = function (pluginName, rootPath, data, done) {
   console.log(`  & running plugin ${pluginName} on ${rootPath}`)
+  console.log(`    - data: ${Object.keys(data)
+    .map(k => k + '=' + data[k])
+    .join(', ')
+  }`)
 
   let localtargetdir = path.join(targetdir, rootPath)
   mkdirp.sync(localtargetdir)

@@ -9,7 +9,7 @@ module.exports.makePagination = function (gen, basepath, cards, page, options, e
       (page) * options.ppp
     )
     .map(card => ({
-      url: card.url,
+      path: card.path,
       name: card.name,
       excerpt: options.excerpts
         ? extract(card.desc, 'md')
@@ -55,8 +55,9 @@ module.exports.fillWithDates = function (card) {
   return card
 }
 
-module.exports.cardPageProps = function (card) {
+module.exports.cardPageProps = function (card, extraProps = {}) {
   return {
+    ...extraProps,
     listName: card.listName,
     slug: card.slug,
     name: card.name,

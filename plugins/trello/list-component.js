@@ -1,4 +1,5 @@
 const h = require('react-hyperscript')
+const path = require('path')
 
 module.exports = props => {
   return [
@@ -16,14 +17,14 @@ module.exports = props => {
       ),
     h('section', {key: 'section'}, [
       h('ul', props.cards.map(card =>
-        h('li', {key: card.url}, [
+        h('li', {key: card.path}, [
           h('article', [
             h('header', [
-              card.cover && h('a', {href: card.url}, [
+              card.cover && h('a', {href: path.join(props.root, card.path)}, [
                 h('img', {src: card.cover})
               ]),
               h('h1', [
-                h('a', {href: card.url}, card.name)
+                h('a', {href: path.join(props.root, card.path)}, card.name)
               ]),
               h('aside', [
                 h('time', {dateTime: card.date}, card.shortDate)
@@ -41,12 +42,20 @@ module.exports = props => {
         h('ul', [
           h('li', [
             h('a', props.prev !== undefined
-              ? {rel: 'prev', href: `${props.basepath}/p/${props.prev}`}
+              ? {
+                rel: 'prev',
+                href: path.join(props.basepath, 'p', props.prev)
+              }
               : {}, '⇐')
           ]),
           h('li', [
             props.next !== undefined
-              ? h('a', {rel: 'next', href: `${props.basepath}/p/${props.next}`}, '⇒')
+              ? (
+                h('a', {
+                  rel: 'next',
+                  href: path.join(props.basepath, 'p', props.next)
+                }, '⇒')
+              )
               : ''
           ])
         ])

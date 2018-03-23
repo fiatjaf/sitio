@@ -17,8 +17,7 @@ module.exports = function (root, gen, {
 }, staticdir, done) {
   const t = new Trello(apiKey, apiToken)
   const listId = id
-  const ppp = typeof postsPerPage === 'string' ? JSON.parse(postsPerPage) : postsPerPage
-  excerpts = typeof postsPerPage === 'string' ? JSON.parse(excerpts) : excerpts
+  const ppp = postsPerPage
 
   parallel([
     done => t.get(`/1/lists/${listId}/cards`, {
@@ -55,14 +54,14 @@ module.exports = function (root, gen, {
     // list page and /p/ afterwards
     var page = 1
     while ((page - 1) * ppp < cards.length) {
-      makePagination(gen, root, cards, page, {ppp, excerpts}, {name})
+      makePagination(gen, '/', cards, page, {ppp, excerpts}, {name, root})
       page++
     }
 
     // each card page
     cards
       .map(card => {
-        gen(`/${card.slug}/`, '../card-component.js', cardPageProps(card))
+        gen(`/${card.slug}/`, '../card-component.js', cardPageProps(card, {root}))
       })
   }, done)
 }
