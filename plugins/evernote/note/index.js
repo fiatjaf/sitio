@@ -1,8 +1,8 @@
 const puppeteer = require('puppeteer')
 const path = require('path')
 
-module.exports = function (root, gen, {ref}, staticdir, done) {
-  getNoteData(ref, staticdir)
+module.exports = function (root, gen, {url}, staticdir, done) {
+  getNoteData(url, staticdir)
     .then(({title, date, content}) => {
       gen('/', '../note-component.js', {root, title, date, content})
     })
