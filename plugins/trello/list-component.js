@@ -9,8 +9,9 @@ module.exports = props => {
         h('header', {key: 'header'}, [
           h('h1', [
             h('a', {
-              href: props.basepath /* cannot be '' because when we're in /p/ urls this
-                                      must return to the beggining */
+              href: path.join(props.root, props.basepath)
+              /* cannot be '' because when we're in /p/ urls this
+                 must return to the beggining */
             }, props.name)
           ])
         ])
@@ -44,7 +45,7 @@ module.exports = props => {
             h('a', props.prev !== undefined
               ? {
                 rel: 'prev',
-                href: path.join(props.basepath, 'p', props.prev)
+                href: path.join(props.root, props.basepath, 'p', props.prev)
               }
               : {}, '⇐')
           ]),
@@ -53,7 +54,7 @@ module.exports = props => {
               ? (
                 h('a', {
                   rel: 'next',
-                  href: path.join(props.basepath, 'p', props.next)
+                  href: path.join(props.root, props.basepath, 'p', props.next)
                 }, '⇒')
               )
               : ''

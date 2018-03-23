@@ -131,5 +131,7 @@ module.exports = function (root, gen, {
           content: card.desc
         })
       )
+
+    done(null)
   })
 }

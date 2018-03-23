@@ -45,7 +45,7 @@ module.exports = function (root, gen, {
     cards.forEach(card => {
       card.slug = slugify(card.name)
       card.cover = card.attachments ? card.attachments[0].url : null
-      card.url = `${root}/${card.slug}`
+      card.path = `/${card.slug}`
       card.listName = name
 
       fillWithDates(card)
@@ -63,5 +63,7 @@ module.exports = function (root, gen, {
       .map(card => {
         gen(`/${card.slug}/`, '../card-component.js', cardPageProps(card, {root}))
       })
-  }, done)
+
+    done(null)
+  })
 }

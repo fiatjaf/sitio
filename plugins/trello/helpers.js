@@ -3,7 +3,7 @@ const extract = require('extract-summary')
 const slug = require('slug')
 
 module.exports.makePagination = function (gen, basepath, cards, page, options, extraProps) {
-  cards = cards
+  let cardsHere = cards
     .slice(
       (page - 1) * options.ppp,
       (page) * options.ppp
@@ -24,10 +24,10 @@ module.exports.makePagination = function (gen, basepath, cards, page, options, e
   let props = {
     ...extraProps,
     basepath,
-    cards,
-    prev: page - 1 || undefined,
-    next: cards.length > page * options.ppp
-      ? page + 1
+    cards: cardsHere,
+    prev: (page - 1).toString() || undefined,
+    next: cards.length > (page * options.ppp)
+      ? (page + 1).toString()
       : undefined
   }
 
