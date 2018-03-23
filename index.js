@@ -60,11 +60,10 @@ module.exports.listFiles = function (options) {
 }
 
 module.exports.plug = function (pluginName, rootPath, data, done) {
-  console.log(`  & running plugin ${pluginName} on ${rootPath}`)
-  console.log(`    - data: ${Object.keys(data)
+  console.log(`& plug(${pluginName}, ${rootPath}, ${Object.keys(data)
     .map(k => k + '=' + data[k])
     .join(', ')
-  }`)
+  })`)
 
   let localtargetdir = path.join(targetdir, rootPath)
   mkdirp.sync(localtargetdir)
@@ -90,19 +89,19 @@ function generatePage (pathname, componentpath, props) {
   if (pathname[0] !== '/') pathname = '/' + pathname
   if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
 
-  console.log(`  > generating pages at ${pathname}`)
-  console.log(`    - component: ${componentpath}`)
-  console.log(`    - props: ${typeof props === 'object'
+  console.log(`> generatePage(${pathname}, ${componentpath}, ${typeof props === 'object'
     ? Object.keys(props).map(k => `${k}=${typeof props[k] === 'string'
-      ? props[k].slice(0, 7).replace('\n', '\\n') + (props[k].length > 7 ? '…' : '')
-      : typeof props[k] === 'object'
-        ? typeof Array.isArray(props[k])
-          ? '[…]'
-          : '{…}'
-        : props[k]
+      ? props[k].slice(0, 5).replace('\n', '\\n') + (props[k].length > 5 ? '…' : '')
+      : props[k] === null
+        ? 'null'
+        : typeof props[k] === 'object'
+          ? Array.isArray(props[k])
+            ? `[…]${props[k].length}`
+            : `{…}${Object.keys(props[k]).length}`
+          : props[k]
     }`).join(', ')
     : props
-  }`)
+  })`)
   usedComponents.push(componentpath)
   let targetpath = path.join(targetdir, pathname, 'index.html')
 
@@ -179,7 +178,7 @@ module.exports.copyStatic = function (patterns) {
     )
     .map(staticFiles =>
       staticFiles.map(filepath => {
-        console.log(`  > copying static file ${filepath}.`)
+        console.log(`# copyStatic(${filepath})`)
         copy.sync(
           path.join(process.cwd(), filepath),
           path.join(targetdir, filepath)
@@ -189,17 +188,18 @@ module.exports.copyStatic = function (patterns) {
 }
 
 module.exports.end = function () {
-  console.log('generating the JS bundle that puts everything together')
+  console.log('(i) generating the JS bundle that puts everything together.')
 
   var pageExternalPackages = []
   try {
     pageExternalPackages = Object.keys(
-      require(path.join(process.cwd(), 'package.json'))
-        .dependencies
+      require(path.join(process.cwd(), 'package.json')).dependencies
     )
-  } catch (e) {}
+  } catch (e) {
+    console.error('(!) error getting package dependencies names.', e)
+  }
 
-  console.log('passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify')
+  console.log('(i) passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify.')
 
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
     paths: process.env.NODE_PATH.split(':'),
