@@ -69,19 +69,11 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
   mkdirp.sync(localtargetdir)
 
   let gen = function (pathsuffix, component, props) {
-    try {
-      generatePage(
-        path.join(path.join(rootPath, pathsuffix)),
-        path.join('node_modules', component),
-        props
-      )
-    } catch (e) {
-      generatePage(
-        path.join(path.join(rootPath, pathsuffix)),
-        path.join('node_modules', pluginName, component),
-        props
-      )
-    }
+    generatePage(
+      path.join(path.join(rootPath, pathsuffix)),
+      path.join('node_modules', pluginName, component),
+      props
+    )
   }
   require(pluginName)(
     rootPath, // the path of the site this plugin controls
@@ -95,7 +87,11 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
 module.exports.generatePage = generatePage
 function generatePage (pathname, componentpath, props) {
   // first try to require needed components
-  // (because if this fails we may catch and try again on plug())
+  let s = componentpath.indexOf('sitio/')
+  componentpath = s > 0 && componentpath[s - 1] === '/'
+    ? componentpath.slice(s)
+    : componentpath
+
   let Component = require(componentpath)
   usedComponents.push(componentpath)
 
