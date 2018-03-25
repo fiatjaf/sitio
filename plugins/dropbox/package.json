@@ -1,0 +1,12 @@
+{
+  "name": "sitio-dropbox",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "gray-matter": "^3.1.1",
+    "markdown-it": "^8.4.1",
+    "node-fetch": "^2.1.1",
+    "puppeteer": "^1.2.0",
+    "react-hyperscript": "^3.2.0"
+  }
+}
