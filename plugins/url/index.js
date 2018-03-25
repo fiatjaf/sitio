@@ -2,6 +2,12 @@ const fs = require('fs')
 const fetch = require('node-fetch')
 const matter = require('gray-matter')
 const path = require('path')
+const md = require('markdown-it')({
+  html: true,
+  linkify: true,
+  breaks: true,
+  typographer: true
+})
 
 module.exports = function (_, gen, data, staticdir, done) {
   let url = data.url
@@ -18,7 +24,10 @@ module.exports = function (_, gen, data, staticdir, done) {
         )
       } else {
         let {content, data} = matter(text)
-        gen('/', 'html.js', {content, data})
+        gen('/', 'sitio/component-utils/html.js', {
+          html: md.render(content),
+          data
+        })
         done(null)
       }
     })

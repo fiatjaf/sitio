@@ -69,11 +69,19 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
   mkdirp.sync(localtargetdir)
 
   let gen = function (pathsuffix, component, props) {
-    generatePage(
-      path.join(path.join(rootPath, pathsuffix)),
-      path.join('node_modules', pluginName, component),
-      props
-    )
+    try {
+      generatePage(
+        path.join(path.join(rootPath, pathsuffix)),
+        path.join('node_modules', component),
+        props
+      )
+    } catch (e) {
+      generatePage(
+        path.join(path.join(rootPath, pathsuffix)),
+        path.join('node_modules', pluginName, component),
+        props
+      )
+    }
   }
   require(pluginName)(
     rootPath, // the path of the site this plugin controls
@@ -86,6 +94,14 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
 
 module.exports.generatePage = generatePage
 function generatePage (pathname, componentpath, props) {
+  // first try to require needed components
+  // (because if this fails we may catch and try again on plug())
+  let Component = require(componentpath)
+  usedComponents.push(componentpath)
+
+  let Helmet = require(yargs.argv.helmet)
+  let Body = require(yargs.argv.body)
+
   if (pathname[0] !== '/') pathname = '/' + pathname
   if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
 
@@ -102,7 +118,6 @@ function generatePage (pathname, componentpath, props) {
     }`).join(', ')
     : props
   })`)
-  usedComponents.push(componentpath)
   let targetpath = path.join(targetdir, pathname, 'index.html')
 
   let staticprops = Object.assign({
@@ -114,10 +129,6 @@ function generatePage (pathname, componentpath, props) {
   }, props)
 
   /* generating static HTML */
-  let Helmet = require(yargs.argv.helmet)
-  let Body = require(yargs.argv.body)
-  let Component = require(componentpath)
-
   let page = React.createElement(Body, staticprops,
     React.createElement(Helmet, staticprops),
     React.createElement(Component, staticprops)

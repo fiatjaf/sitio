@@ -119,8 +119,8 @@ module.exports = function (root, gen, {
         gen(card.path, '../card-component.js', cardPageProps(card, {root}))
 
         // permalink based on card id or shortLink
-        gen(`/c/${card.id}`, '../redirect.js', {target: card.path})
-        gen(`/c/${card.shortLink}`, '../redirect.js', {target: card.path})
+        gen(`/c/${card.id}`, 'sitio/component-utils/redirect.js', {target: card.path})
+        gen(`/c/${card.shortLink}`, 'sitio/component-utils/redirect.js', {target: card.path})
       })
 
     // cards that are absolute pages

@@ -4,7 +4,10 @@ const path = require('path')
 module.exports = function (root, gen, {url}, staticdir, done) {
   getNoteData(url, staticdir)
     .then(({title, date, content}) => {
-      gen('/', '../note-component.js', {root, title, date, content})
+      gen('/', 'sitio/component-utils/html.js', {
+        props: {title, date},
+        html: content
+      })
     })
     .then(() => done())
     .catch(done)
