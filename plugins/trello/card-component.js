@@ -8,9 +8,9 @@ const md = require('markdown-it')({
 })
 
 module.exports = props => {
-  let parts = props.location.pathname.split('/')
-  parts.splice(-2, 1)
-  let parentURL = parts.join('/')
+  let parentList = props.location.pathname.slice(-1)[0] === '/'
+    ? '..'
+    : '.'
 
   return [
     !props.listName
@@ -18,7 +18,7 @@ module.exports = props => {
       : (
         h('header', {key: 'header'}, [
           h('h1', [
-            h('a', {href: parentURL}, props.listName)
+            h('a', {href: parentList}, props.listName)
           ])
         ])
       ),
