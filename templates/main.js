@@ -35,17 +35,20 @@ window.reactSite.Main = createClass({
   componentDidMount: function () {
     var self = this
 
-    history.listen(function (location) {
-      console.log('> navigating', location.pathname)
-      amd.require([standaloneURL(location.pathname)], function (page) {
+    history.listen(function (loc) {
+      console.log('> navigating', loc.pathname)
+      amd.require([standaloneURL(loc.pathname)], function (page) {
         var props = page.props
-        props.location = location
+        props.location = loc
         props.global = window.reactSite
 
         self.setState({
           component: page.component,
           props: props
         })
+      }, () => {
+        console.log("> couldn't navigate, redirecting...")
+        location.pathname = loc.pathname
       })
     })
 
