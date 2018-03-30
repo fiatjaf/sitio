@@ -1,18 +1,6 @@
 const puppeteer = require('puppeteer')
 const path = require('path')
 
-module.exports = function (root, gen, {url}, staticdir, done) {
-  getNoteData(url, staticdir)
-    .then(({title, date, content}) => {
-      gen('/', 'sitio/component-utils/html.js', {
-        props: {title, date},
-        html: content
-      })
-    })
-    .then(() => done())
-    .catch(done)
-}
-
 async function getNoteData (sharedURL, staticdir) {
   try {
     let browser = await puppeteer.launch()
@@ -70,3 +58,20 @@ async function getNoteData (sharedURL, staticdir) {
     console.error('error scraping', sharedURL, e)
   }
 }
+
+module.exports = function (root, gen, {url}, staticdir, done) {
+  getNoteData(url, staticdir)
+    .then(({title, date, content}) => {
+      gen('/', 'sitio/component-utils/article.js', {
+        data: {
+          name: title,
+          date
+        },
+        html: content,
+        root
+      })
+    })
+    .then(() => done())
+    .catch(done)
+}
+
