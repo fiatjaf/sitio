@@ -1,44 +1,49 @@
 const dateFormat = require('dateformat')
 const extract = require('extract-summary')
 const slug = require('slug')
+const md = require('markdown-it')({
+  html: true,
+  linkify: true,
+  breaks: true,
+  typographer: true
+})
 
 module.exports.makePagination = function (gen, basepath, cards, page, options, extraProps) {
-  let cardsHere = cards
-    .slice(
-      (page - 1) * options.ppp,
-      (page) * options.ppp
-    )
-    .map(card => ({
-      path: card.path,
-      name: card.name,
-      excerpt: options.excerpts
-        ? extract(card.desc, 'md')
-        : '',
-      shortLink: card.shortLink,
-      date: card.date,
-      cover: card.cover,
-      shortDate: card.shortDate,
-      labels: card.labels.map(l => l.name || l.id)
-    }))
-
   let props = {
     ...extraProps,
     basepath,
-    cards: cardsHere,
+    items: cards
+      .slice(
+        (page - 1) * options.ppp,
+        (page) * options.ppp
+      )
+      .map(card => ({
+        path: card.path,
+        name: card.name,
+        excerpt: options.excerpts
+          ? extract(card.desc, 'md')
+          : '',
+        cover: card.cover,
+        date: card.date,
+        shortDate: card.shortDate,
+        tags: card.labels
+      })),
+    page: page,
     prev: (page - 1).toString() || undefined,
     next: cards.length > (page * options.ppp)
       ? (page + 1).toString()
       : undefined
   }
 
-  gen(`${basepath}/p/${page}/`, '../list-component.js', props)
+  gen(`${basepath}/p/${page}/`, 'sitio/component-utils/list.js', props)
 
   if (page === 1) {
-    gen(basepath, '../list-component.js', props)
+    gen(basepath, 'sitio/component-utils/list.js', props)
   }
 }
 
-module.exports.slugify = function (name) {
+module.exports.slugify = slugify
+function slugify (name) {
   return slug(name, {lower: true})
 }
 
@@ -58,17 +63,27 @@ module.exports.fillWithDates = function (card) {
 module.exports.cardPageProps = function (card, extraProps = {}) {
   return {
     ...extraProps,
-    listName: card.listName,
-    slug: card.slug,
-    name: card.name,
-    desc: card.desc,
-    date: card.date,
-    cover: card.cover,
-    prettyDate: card.prettyDate,
-    labels: card.labels.map(l => ({
-      name: l.name,
-      slug: module.exports.slugify(l.name) || l.id,
-      color: l.color
-    }))
+    html: md.render(card.desc),
+    data: {
+      parentName: card.listName,
+      name: card.name,
+      date: card.date,
+      cover: card.cover,
+      prettyDate: card.prettyDate,
+      tags: card.labels
+    }
   }
+}
+
+module.exports.colors = {
+  blue: '#0079B',
+  green: '#61BD4F',
+  orange: '#FFAB4A',
+  red: '#EB5A46',
+  yellow: '#F2D600',
+  purple: '#C377E0',
+  pink: '#FF80CE',
+  sky: '#00C2E0',
+  lime: '#51E898',
+  shades: '#838C91'
 }

@@ -22,7 +22,7 @@ module.exports = function (root, gen, {url}, staticdir, done) {
       }
 
       let {content, data} = matter(text)
-      gen('/', 'sitio/component-utils/html.js', {
+      gen('/', 'sitio/component-utils/article.js', {
         html: md.render(content),
         data
       })

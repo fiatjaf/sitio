@@ -9,14 +9,11 @@ const md = require('markdown-it')({
   typographer: true
 })
 
-module.exports = function (_, gen, data, staticdir, done) {
-  let url = data.url
-  let fullPage = data['full-page']
-
+module.exports = function (_, gen, {url}, staticdir, done) {
   fetch(url)
     .then(r => r.text())
     .then(text => {
-      if (fullPage) {
+      if (text.toLowerCase().startsWith('<!doctype')) {
         fs.writefile(
           path.join(staticdir, 'index.html'),
           text,
@@ -24,7 +21,7 @@ module.exports = function (_, gen, data, staticdir, done) {
         )
       } else {
         let {content, data} = matter(text)
-        gen('/', 'sitio/component-utils/html.js', {
+        gen('/', 'sitio/component-utils/article.js', {
           html: md.render(content),
           data
         })

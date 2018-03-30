@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "date-format": "^1.2.0",
+    "dateformat": "^3.0.3",
+    "extract-summary": "^1.1.0",
     "gray-matter": "^3.1.1",
+    "hashbow": "^1.1.1",
     "markdown-it": "^8.4.1",
     "node-fetch": "^2.1.1",
     "puppeteer": "^1.2.0",

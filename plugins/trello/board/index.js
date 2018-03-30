@@ -1,11 +1,18 @@
 const Trello = require('node-trello')
 const parallel = require('run-parallel')
+const md = require('markdown-it')({
+  html: true,
+  linkify: true,
+  breaks: true,
+  typographer: true
+})
 
 const {
   slugify,
   fillWithDates,
   cardPageProps,
-  makePagination
+  makePagination,
+  colors
 } = require('../helpers')
 
 module.exports = function (root, gen, {
@@ -30,7 +37,7 @@ module.exports = function (root, gen, {
       fields: 'name,color'
     }, done),
     done => t.get(`/1/boards/${boardId}/cards`, {
-      fields: 'name,desc,due,idList,shortLink,labels',
+      fields: 'name,desc,due,idList,shortLink,idLabels',
       attachments: 'cover',
       attachment_fields: 'url',
       checklists: 'all',
@@ -44,12 +51,24 @@ module.exports = function (root, gen, {
       return done(err)
     }
 
-    cards = cards.filter(({name}) => name[0] !== '_')
+    // standardize labels
+    var labelMap = {}
+    labels.forEach(label => {
+      label.name = label.name || label.color
+      label.slug = slugify(label.name)
 
+      labelMap[label.id] = {
+        name: label.name,
+        slug: label.slug,
+        color: colors[label.color]
+      }
+    })
+
+    cards = cards.filter(({name}) => name[0] !== '_')
     cards.forEach(card => {
       card.slug = slugify(card.name)
       card.cover = card.attachments ? card.attachments[0].url : null
-
+      card.labels = card.idLabels.map(idl => labelMap[idl])
       fillWithDates(card)
     })
 
@@ -84,12 +103,8 @@ module.exports = function (root, gen, {
 
     // label pages and pagination
     labels.forEach(label => {
-      label.slug = slugify(label.name) || label.id
-
       let cardsHere = cards
-        .filter(({labels}) =>
-          labels.filter(l => l === label.name || l === label.id).length
-        )
+        .filter(({idLabels}) => idLabels.filter(idl => idl === label.id).length)
 
       var page = 1
       while ((page - 1) * ppp < cards.length) {
@@ -116,7 +131,7 @@ module.exports = function (root, gen, {
     cards
       .filter(card => card.listName /* if there's no listName it means no */)
       .map(card => {
-        gen(card.path, '../card-component.js', cardPageProps(card, {root}))
+        gen(card.path, 'sitio/component-utils/article.js', cardPageProps(card, {root}))
 
         // permalink based on card id or shortLink
         gen(`/c/${card.id}`, 'sitio/component-utils/redirect.js', {target: card.path})
@@ -127,8 +142,8 @@ module.exports = function (root, gen, {
     cards
       .filter(({listName, name}) => !listName && name[0] === '/')
       .forEach(card =>
-        gen(card.name, '../page.js', {
-          content: card.desc
+        gen(card.name, 'sitio/component-utils/article.js', {
+          html: md.render(card.desc)
         })
       )
 

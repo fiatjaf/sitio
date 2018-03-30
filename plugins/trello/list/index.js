@@ -61,7 +61,7 @@ module.exports = function (root, gen, {
     // each card page
     cards
       .map(card => {
-        gen(`/${card.slug}/`, '../card-component.js', cardPageProps(card, {root}))
+        gen(`/${card.slug}/`, 'sitio/component-utils/article.js', cardPageProps(card, {root}))
       })
 
     done(null)
