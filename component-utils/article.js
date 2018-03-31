@@ -36,7 +36,8 @@ module.exports = function ({html, data, location, root}) {
               h('a', {
                 rel: 'tag',
                 href: path.join(root, 'tag', slug || name) + '/',
-                className: color
+                style: {backgroundColor: color},
+                className: name
               }, name || h('span', {
                 dangerouslySetInnerHTML: {__html: '&nbsp;&nbsp;&nbsp;'}
               }))
