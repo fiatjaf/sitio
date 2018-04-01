@@ -128,6 +128,25 @@ Writing READMEs is wearing. I'll write this later, but basically you'll define a
 
 For a blog you should also write an index that shows all the pages, that's just another React component. You can pass to it just the names, dates and pathnames of the blog posts, or you can also, for example, extract summaries from the blogposts with [extract-summary](https://www.npmjs.com/package/extract-summary) and pass those too.
 
+## plugins
+
+For advanced users: you can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=sitio-) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
+
+```javascript
+plug(
+  pluginName, // like 'sitio-trello' -- the plugin code will be require'd automatically
+  rootPath, // a path like '/trello' -- all pages generated will all be put under this
+  data, // an object containing any kind of data the plugin may expect
+  done // a function that will be called with done(err) as soon as the plugin finishes its job
+)
+```
+
+Creating a plugin is easy too. Please look at the code on [the plugins subdirectory](plugins) for some examples.
+
+## hosted version
+
+Visit [sitios.xyz](https://sitios.xyz/) for a website creating service that combines [sitio plugins](#plugins) and [classless themes](https://github.com/fiatjaf/classless) to generate and host sites for you without you having to touch any code.
+
 ## faq
 
   * **Why is this better than writing my own single-page application with React?** Because you get static files, in HTML, that work for clients without Javascript. Also, you can use **sitio** as a single-page application generator, since you can use super complex components at any route you want, the benefit is that you won't need a full-featured backend server for routing, since every route will have an `index.html` there waiting to be served you can just use a static server.
