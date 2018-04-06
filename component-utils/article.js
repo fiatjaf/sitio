@@ -30,7 +30,7 @@ module.exports = function ({html, data, location, root}) {
           h('a', {rel: 'bookmark', href: ''}, data.name)
         ]),
         h('aside', [
-          h('time', {dateTime: data.date}, data.prettyDate || data.date),
+          data.date && h('time', {dateTime: data.date}, data.prettyDate || data.date),
           h('ul', (data.tags || []).map(({slug, name, color}) =>
             h('li', {key: slug || name}, [
               h('a', {

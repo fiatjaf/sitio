@@ -9,7 +9,14 @@ const ReactHelmet = require('react-helmet').default
 const yargs = require('yargs')
 const renderToString = require('react-dom/server').renderToString
 const pretty = require('pretty')
-const browserify = require('browserify')
+var browserify
+var incremental = false
+try {
+  browserify = require('browserify-incremental')
+  incremental = true
+} catch (e) {
+  browserify = require('browserify')
+}
 
 const extract = require('./extract')
 const {standaloneURL} = require('./utils')
@@ -206,7 +213,7 @@ module.exports.end = function () {
     console.error('(!) error getting package dependencies names.', e)
   }
 
-  console.log('(i) passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify.')
+  console.log('(i) passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify' + (incremental ? 'inc' : '') + '.')
 
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
     paths: process.env.NODE_PATH.split(':'),
@@ -237,9 +244,11 @@ module.exports.end = function () {
   b.require(usedComponents)
   let br = b.bundle()
 
+  console.log('(i) writing the result to bundle.js')
   let w = fs.createWriteStream(path.join(targetdir, 'bundle.js'), {encoding: 'utf-8'})
   br.pipe(w)
   br.on('end', () =>
     w.end(process.exit)
   )
+  br.on('error', err => console.error(err))
 }
