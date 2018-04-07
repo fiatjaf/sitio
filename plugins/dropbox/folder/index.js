@@ -69,114 +69,109 @@ async function getItems (currentpath, nexturl) {
   }
 }
 
-module.exports = function (root, gen, {
+module.exports = async function (root, gen, {
   url,
   excerpts = true,
   postsPerPage = 7
-}, staticdir, done) {
+}, staticdir) {
   const ppp = postsPerPage
 
-  getItems('/', url)
-    .then(({htmls, files, folderName}) => {
-      return Promise.all([
-        Promise.all(htmls.map(([pathname, url]) =>
-          fetch(url.replace('dl=0', 'dl=1'), {redirect: 'follow'})
-            .then(r => r.text())
-            .then(text => {
-              if (text.toLowerCase().indexOf('<!doctype') !== -1) {
-                let pathtarget = path.join(staticdir, pathname)
-                mkdirp.sync(path.dirname(pathtarget))
-                return fs.writeFileSync(pathtarget, text)
-              }
+  let {htmls, files, folderName} = getItems('/', url)
 
-              let {content, data} = matter(text)
-              pathname = pathname.replace(/\.(md|markdown)$/, '.html')
-              pathname = (pathname.endsWith('/index.html') ||
-                          pathname.endsWith('/index.htm'))
-                ? pathname.split('/').slice(0, -2).join('/')
-                : pathname.replace(/\.html?$/, '')
+  let documents = await Promise.all([
+    Promise.all(htmls.map(([pathname, url]) =>
+      fetch(url.replace('dl=0', 'dl=1'), {redirect: 'follow'})
+        .then(r => r.text())
+        .then(text => {
+          if (text.toLowerCase().indexOf('<!doctype') !== -1) {
+            let pathtarget = path.join(staticdir, pathname)
+            mkdirp.sync(path.dirname(pathtarget))
+            return fs.writeFileSync(pathtarget, text)
+          }
 
-              let doc = {
-                data,
-                html: md.render(content)
-              }
+          let {content, data} = matter(text)
+          pathname = pathname.replace(/\.(md|markdown)$/, '.html')
+          pathname = (pathname.endsWith('/index.html') ||
+                      pathname.endsWith('/index.htm'))
+            ? pathname.split('/').slice(0, -2).join('/')
+            : pathname.replace(/\.html?$/, '')
 
-              doc.data.parentName = folderName
-              doc.data.tags = (doc.data.tags || [])
-                .concat(
-                  path.dirname(pathname).split('/')
-                    .filter(t => t !== '.' && t !== '..')
-                )
-                .filter(tagName => tagName)
-                .map(tagName => ({
-                  name: tagName,
-                  color: hashbow(tagName, 50, 75)
-                }))
+          let doc = {
+            data,
+            html: md.render(content)
+          }
 
-              doc.data.name = data.title || data.name || path.basename(pathname)
-              doc.data.cover = data.cover || data.header
-              doc.path = pathname
+          doc.data.parentName = folderName
+          doc.data.tags = (doc.data.tags || [])
+            .concat(
+              path.dirname(pathname).split('/')
+                .filter(t => t !== '.' && t !== '..')
+            )
+            .filter(tagName => tagName)
+            .map(tagName => ({
+              name: tagName,
+              color: hashbow(tagName, 50, 75)
+            }))
 
-              if (doc.data.date) {
-                let date = new Date(Date.parse(data.date))
-                doc.data.date = date.toISOString()
-                doc.data.shortDate = dateFormat(date, 'd mmm yyyy')
-              }
+          doc.data.name = data.title || data.name || path.basename(pathname)
+          doc.data.cover = data.cover || data.header
+          doc.path = pathname
 
-              gen(pathname, 'sitio/component-utils/article.js', {
-                ...doc,
-                root
-              })
+          if (doc.data.date) {
+            let date = new Date(Date.parse(data.date))
+            doc.data.date = date.toISOString()
+            doc.data.shortDate = dateFormat(date, 'd mmm yyyy')
+          }
 
-              return doc
-            })
-        )),
-        files.map(([pathname, url]) =>
-          gen(pathname, 'sitio/component-utils/redirect.js', {target: url})
-        )
-      ])
-      .then(([documents]) =>
-        documents.filter(x => x)
-      )
-      .then(documents => {
-        // normal, date-sorted pagination
-        documents = documents.sort((a, b) => a.data.date < b.data.date ? -1 : 1)
-        console.log('DOCUMENTS', documents.map(d => [d.data.name, d.path]))
-
-        var page = 1
-        while ((page - 1) * ppp < documents.length) {
-          makePagination(gen, '/', documents, page, {ppp, excerpts}, {
-            name: folderName,
+          gen(pathname, 'sitio/component-utils/article.js', {
+            ...doc,
             root
           })
-          page++
-        }
 
-        // tag-based pagination
-        var byTag = documents.reduce((acc, doc) => {
-          if (!doc.data.tags) return acc
-          return doc.data.tags.reduce((acc, {name: tagName}) => {
-            acc[tagName] = acc[tagName] || []
-            acc[tagName].push(doc)
-            return acc
-          }, acc)
-        }, {})
+          return doc
+        })
+    )),
+    files.map(([pathname, url]) =>
+      gen(pathname, 'sitio/component-utils/redirect.js', {target: url})
+    )
+  ])
 
-        for (let tagName in byTag) {
-          let documents = byTag[tagName]
-          var tpage = 1
-          while ((tpage - 1) * ppp < documents.length) {
-            makePagination(gen, `/tag/${tagName}/`, documents, tpage, {ppp, excerpts}, {
-              name: tagName,
-              root
-            })
-            tpage++
-          }
-        }
-      })
+  documents = documents.filter(x => x)
+
+  // normal, date-sorted pagination
+  documents = documents.sort((a, b) => a.data.date < b.data.date ? -1 : 1)
+  console.log('DOCUMENTS', documents.map(d => [d.data.name, d.path]))
+
+  var page = 1
+  while ((page - 1) * ppp < documents.length) {
+    makePagination(gen, '/', documents, page, {ppp, excerpts}, {
+      name: folderName,
+      root
     })
-    .then(() => done(null))
-    .catch(done)
+    page++
+  }
+
+  // tag-based pagination
+  var byTag = documents.reduce((acc, doc) => {
+    if (!doc.data.tags) return acc
+    return doc.data.tags.reduce((acc, {name: tagName}) => {
+      acc[tagName] = acc[tagName] || []
+      acc[tagName].push(doc)
+      return acc
+    }, acc)
+  }, {})
+
+  for (let tagName in byTag) {
+    let documents = byTag[tagName]
+    var tpage = 1
+    while ((tpage - 1) * ppp < documents.length) {
+      makePagination(gen, `/tag/${tagName}/`, documents, tpage, {ppp, excerpts}, {
+        name: tagName,
+        root
+      })
+      tpage++
+    }
+  }
 }
 
 function makePagination (gen, basepath, items, page, options, extraProps) {

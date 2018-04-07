@@ -130,7 +130,7 @@ For a blog you should also write an index that shows all the pages, that's just 
 
 ## plugins
 
-For advanced users: you can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=sitio-) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
+For advanced users: you can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=keywords:sitio-plugin) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
 
 ```javascript
 plug(

@@ -1,5 +1,5 @@
+const util = require('util')
 const Trello = require('node-trello')
-const parallel = require('run-parallel')
 
 const {
   slugify,
@@ -8,19 +8,19 @@ const {
   makePagination
 } = require('../helpers')
 
-module.exports = function (root, gen, {
+module.exports = async function (root, gen, {
   id,
   apiKey,
   apiToken,
   postsPerPage = 7,
   excerpts = true
-}, staticdir, done) {
+}, staticdir) {
   const t = new Trello(apiKey, apiToken)
   const listId = id
   const ppp = postsPerPage
 
-  parallel([
-    done => t.get(`/1/lists/${listId}/cards`, {
+  let [cards, {name}] = await Promise.all([
+    util.promisify(t.get)(`/1/lists/${listId}/cards`, {
       fields: 'name,desc,due,shortLink,labels',
       attachments: 'cover',
       attachment_fields: 'url',
@@ -28,42 +28,33 @@ module.exports = function (root, gen, {
       checkItemStates: true,
       members: true,
       member_fields: 'username,avatarHash'
-    }, done),
-    done => t.get(`/1/lists/${listId}`, {fields: 'idBoard,name'}, done)
-  ], (err, results) => {
-    if (err) {
-      console.error(`couldn't fetch cards from list ${listId}.`, err)
-      return
-    }
+    }),
+    util.promisify(t.get)(`/1/lists/${listId}`, {fields: 'name'})
+  ])
 
-    let [cards, {_, name}] = results
+  cards = cards
+    .filter(({name}) => name[0] !== '_')
+    .filter(({name}) => name[0] !== '#')
 
-    cards = cards
-      .filter(({name}) => name[0] !== '_')
-      .filter(({name}) => name[0] !== '#')
+  cards.forEach(card => {
+    card.slug = slugify(card.name)
+    card.cover = card.attachments ? card.attachments[0].url : null
+    card.path = `/${card.slug}`
+    card.listName = name
 
-    cards.forEach(card => {
-      card.slug = slugify(card.name)
-      card.cover = card.attachments ? card.attachments[0].url : null
-      card.path = `/${card.slug}`
-      card.listName = name
-
-      fillWithDates(card)
-    })
-
-    // list page and /p/ afterwards
-    var page = 1
-    while ((page - 1) * ppp < cards.length) {
-      makePagination(gen, '/', cards, page, {ppp, excerpts}, {name, root})
-      page++
-    }
-
-    // each card page
-    cards
-      .map(card => {
-        gen(`/${card.slug}/`, 'sitio/component-utils/article.js', cardPageProps(card, {root}))
-      })
-
-    done(null)
+    fillWithDates(card)
   })
+
+  // list page and /p/ afterwards
+  var page = 1
+  while ((page - 1) * ppp < cards.length) {
+    makePagination(gen, '/', cards, page, {ppp, excerpts}, {name, root})
+    page++
+  }
+
+  // each card page
+  cards
+    .map(card => {
+      gen(`/${card.slug}/`, 'sitio/component-utils/article.js', cardPageProps(card, {root}))
+    })
 }

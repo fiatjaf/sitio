@@ -59,19 +59,15 @@ async function getNoteData (sharedURL, staticdir) {
   }
 }
 
-module.exports = function (root, gen, {url}, staticdir, done) {
-  getNoteData(url, staticdir)
-    .then(({title, date, content}) => {
-      gen('/', 'sitio/component-utils/article.js', {
-        data: {
-          name: title,
-          date
-        },
-        html: content,
-        root
-      })
-    })
-    .then(() => done())
-    .catch(done)
+module.exports = async function (root, gen, {url}, staticdir) {
+  let {title, date, content} = getNoteData(url, staticdir)
+  await gen('/', 'sitio/component-utils/article.js', {
+    data: {
+      name: title,
+      date
+    },
+    html: content,
+    root
+  })
 }
 

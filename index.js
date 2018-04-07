@@ -1,6 +1,8 @@
 const fs = require('fs')
+const util = require('util')
 const path = require('path')
 const rimraf = require('rimraf')
+const flatten = require('flatten')
 const mkdirp = require('mkdirp')
 const glob = require('glob')
 const copy = require('cp-file')
@@ -43,10 +45,10 @@ var globals = {
   production: yargs.argv['production'] || process.env.PRODUCTION || false
 }
 
-module.exports.init = function (globalProps = {}) {
+module.exports.init = async function (globalProps = {}) {
   // cleanup and prepare the _site directory
-  rimraf.sync(path.join(targetdir, '*'))
-  mkdirp.sync(targetdir)
+  await util.promisify(rimraf)(path.join(targetdir, '*'))
+  await util.promisify(mkdirp)(targetdir)
 
   // setup global props
   for (let k in globalProps) {
@@ -54,29 +56,30 @@ module.exports.init = function (globalProps = {}) {
   }
 }
 
-module.exports.listFiles = function (options) {
+module.exports.listFiles = async function (options) {
   var {ignore} = options || {}
   ignore = ignore || []
 
   let pattern = options.pattern || defaultPattern
 
-  return glob.sync(pattern, {
+  let fileslist = await util.promisify(glob)(pattern, {
     ignore: defaultIgnore.concat(ignore)
   })
-    .map(extract)
+
+  return fileslist.map(extract)
 }
 
-module.exports.plug = function (pluginName, rootPath, data, done) {
+module.exports.plug = async function (pluginName, rootPath, data) {
   console.log(`& plug(${pluginName}, ${rootPath}, ${Object.keys(data)
     .map(k => k + '=' + data[k])
     .join(', ')
   })`)
 
   let localtargetdir = path.join(targetdir, rootPath)
-  mkdirp.sync(localtargetdir)
+  await util.promisify(mkdirp)(localtargetdir)
 
-  let gen = function (pathsuffix, component, props) {
-    generatePage(
+  let gen = async function (pathsuffix, component, props) {
+    await generatePage(
       path.join(path.join(rootPath, pathsuffix)),
       path.join('node_modules', pluginName, component),
       props
@@ -86,13 +89,14 @@ module.exports.plug = function (pluginName, rootPath, data, done) {
     rootPath, // the path of the site this plugin controls
     gen, // wrapped version of generatePage
     data, // arbitrary data
-    localtargetdir, // target dir for this plugin
-    done // plugins are async, must call this with (err) when done
+    localtargetdir // target dir for this plugin
   )
 }
 
 module.exports.generatePage = generatePage
-function generatePage (pathname, componentpath, props) {
+async function generatePage (pathname, componentpath, props) {
+  var waiting = []
+
   // first try to require needed components
   let s = componentpath.indexOf('sitio/')
   componentpath = s > 0 && componentpath[s - 1] === '/'
@@ -157,8 +161,14 @@ function generatePage (pathname, componentpath, props) {
     html = pretty(html)
   }
 
-  mkdirp.sync(path.dirname(targetpath))
-  fs.writeFileSync(targetpath, html, {encoding: 'utf-8'})
+  await util.promisify(mkdirp)(path.dirname(targetpath))
+
+  waiting.push(new Promise((resolve, reject) => {
+    fs.writeFile(targetpath, html, {encoding: 'utf-8'}, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  }))
   /* --- */
 
   /* generating standalone JS file */
@@ -179,29 +189,41 @@ function generatePage (pathname, componentpath, props) {
   let targetjs = path.join(targetdir, standaloneURL(pathname))
   let w = fs.createWriteStream(targetjs, {encoding: 'utf-8'})
   br.pipe(w)
-  br.on('end', () =>
-    w.end(process.exit)
-  )
+
+  waiting.push(new Promise((resolve, reject) => {
+    br.on('end', err => {
+      if (err) return reject(err)
+
+      w.end(process.exit)
+      resolve()
+    })
+    b.on('error', reject)
+    br.on('error', reject)
+  }))
   /* --- */
+
+  return Promise.all(waiting)
 }
 
-module.exports.copyStatic = function (patterns) {
-  patterns
+module.exports.copyStatic = async function (patterns) {
+  let promisesForPatterns = patterns
     .map(p =>
       glob.sync(p, {ignore: defaultIgnore})
     )
     .map(staticFiles =>
       staticFiles.map(filepath => {
         console.log(`# copyStatic(${filepath})`)
-        copy.sync(
+        copy(
           path.join(process.cwd(), filepath),
           path.join(targetdir, filepath)
         )
       })
     )
+
+  return Promise.all(flatten(promisesForPatterns))
 }
 
-module.exports.end = function () {
+module.exports.end = async function () {
   console.log('(i) generating the JS bundle that puts everything together.')
 
   var pageExternalPackages = []
@@ -247,8 +269,15 @@ module.exports.end = function () {
   console.log('(i) writing the result to bundle.js')
   let w = fs.createWriteStream(path.join(targetdir, 'bundle.js'), {encoding: 'utf-8'})
   br.pipe(w)
-  br.on('end', () =>
-    w.end(process.exit)
-  )
-  br.on('error', err => console.error(err))
+
+  return new Promise((resolve, reject) => {
+    br.on('end', err => {
+      if (err) return reject(err)
+
+      w.end(process.exit)
+      resolve()
+    })
+    b.on('error', reject)
+    br.on('error', reject)
+  })
 }

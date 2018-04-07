@@ -1,7 +1,9 @@
 {
   "name": "sitio-dropbox",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
+  "description": "sitio plugin for generating a page structure from Dropbox folders or single Dropbox documents.",
+  "keywords": ["sitio-plugin"], 
   "dependencies": {
     "date-format": "^1.2.0",
     "dateformat": "^3.0.3",

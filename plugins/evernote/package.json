@@ -1,7 +1,9 @@
 {
   "name": "sitio-evernote",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
+  "description": "sitio plugin for fetching an Evernote note and rendering it.",
+  "keywords": ["sitio-plugin"], 
   "dependencies": {
     "puppeteer": "^1.2.0"
   }
