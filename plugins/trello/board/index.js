@@ -27,16 +27,17 @@ module.exports = async function (root, gen, {
     ? ref.split('/')[4]
     : ref
   const ppp = postsPerPage
+  const get = util.promisify(t.get.bind(t))
 
   let [lists, labels, cards] = await Promise.all([
-    util.promisify(t.get)(`/1/boards/${boardId}/lists`, {
+    get(`/1/boards/${boardId}/lists`, {
       fields: 'name',
       cards: 'none'
     }),
-    util.promisify(t.get)(`/1/boards/${boardId}/labels`, {
+    get(`/1/boards/${boardId}/labels`, {
       fields: 'name,color'
     }),
-    util.promisify(t.get)(`/1/boards/${boardId}/cards`, {
+    get(`/1/boards/${boardId}/cards`, {
       fields: 'name,desc,due,idList,shortLink,idLabels',
       attachments: 'cover',
       attachment_fields: 'url',

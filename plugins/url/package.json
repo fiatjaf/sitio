@@ -1,9 +1,11 @@
 {
   "name": "sitio-url",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "index.js",
   "description": "sitio plugin for fetching a Markdown or HTML URL and rendering it.",
-  "keywords": ["sitio-plugin"], 
+  "keywords": [
+    "sitio-plugin"
+  ],
   "dependencies": {
     "gray-matter": "^3.1.1",
     "markdown-it": "^8.4.1",

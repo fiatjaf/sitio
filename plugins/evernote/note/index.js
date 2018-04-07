@@ -60,7 +60,7 @@ async function getNoteData (sharedURL, staticdir) {
 }
 
 module.exports = async function (root, gen, {url}, staticdir) {
-  let {title, date, content} = getNoteData(url, staticdir)
+  let {title, date, content} = await getNoteData(url, staticdir)
   await gen('/', 'sitio/component-utils/article.js', {
     data: {
       name: title,

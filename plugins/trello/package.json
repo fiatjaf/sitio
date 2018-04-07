@@ -1,9 +1,11 @@
 {
   "name": "sitio-trello",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "index.js",
   "description": "sitio plugin for generating a page structure from Trello boards and lists, similar to websitesfortrello.com",
-  "keywords": ["sitio-plugin"], 
+  "keywords": [
+    "sitio-plugin"
+  ],
   "dependencies": {
     "dateformat": "^3.0.3",
     "extract-summary": "^1.1.0",

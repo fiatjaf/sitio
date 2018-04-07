@@ -18,9 +18,10 @@ module.exports = async function (root, gen, {
   const t = new Trello(apiKey, apiToken)
   const listId = id
   const ppp = postsPerPage
+  const get = util.promisify(t.get.bind(t))
 
   let [cards, {name}] = await Promise.all([
-    util.promisify(t.get)(`/1/lists/${listId}/cards`, {
+    get(`/1/lists/${listId}/cards`, {
       fields: 'name,desc,due,shortLink,labels',
       attachments: 'cover',
       attachment_fields: 'url',
@@ -29,7 +30,7 @@ module.exports = async function (root, gen, {
       members: true,
       member_fields: 'username,avatarHash'
     }),
-    util.promisify(t.get)(`/1/lists/${listId}`, {fields: 'name'})
+    get(`/1/lists/${listId}`, {fields: 'name'})
   ])
 
   cards = cards

@@ -85,7 +85,7 @@ module.exports.plug = async function (pluginName, rootPath, data) {
       props
     )
   }
-  require(pluginName)(
+  await require(pluginName)(
     rootPath, // the path of the site this plugin controls
     gen, // wrapped version of generatePage
     data, // arbitrary data

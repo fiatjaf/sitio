@@ -76,9 +76,9 @@ module.exports = async function (root, gen, {
 }, staticdir) {
   const ppp = postsPerPage
 
-  let {htmls, files, folderName} = getItems('/', url)
+  let {htmls, files, folderName} = await getItems('/', url)
 
-  let documents = await Promise.all([
+  let [documents] = await Promise.all([
     Promise.all(htmls.map(([pathname, url]) =>
       fetch(url.replace('dl=0', 'dl=1'), {redirect: 'follow'})
         .then(r => r.text())
