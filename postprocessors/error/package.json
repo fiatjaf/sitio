@@ -1,0 +1,13 @@
+{
+  "name": "sitio-error",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "sitio postprocessor that generates an error page with a list of all pages that actually exist.",
+  "keywords": [
+    "sitio-postprocessor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiatjaf/sitio.git"
+  }
+}

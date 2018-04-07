@@ -45,6 +45,8 @@ var globals = {
   production: yargs.argv['production'] || process.env.PRODUCTION || false
 }
 
+var generatedPages = []
+
 module.exports.init = async function (globalProps = {}) {
   // cleanup and prepare the _site directory
   await util.promisify(rimraf)(path.join(targetdir, '*'))
@@ -93,8 +95,22 @@ module.exports.plug = async function (pluginName, rootPath, data) {
   )
 }
 
+module.exports.postprocess = async function (pluginName, data = {}) {
+  console.log(`~ postprocess(${pluginName}, ${Object.keys(data)
+    .map(k => k + '=' + data[k])
+    .join(', ')
+  })`)
+
+  await require(pluginName)(
+    (pt, cp, pr) => generatePage(pt, cp, pr, true),
+    generatedPages,
+    data,
+    targetdir // the root target dir for the site (_site/, for example)
+  )
+}
+
 module.exports.generatePage = generatePage
-async function generatePage (pathname, componentpath, props) {
+async function generatePage (pathname, componentpath, props, skipGeneratedPagesList) {
   var waiting = []
 
   // first try to require needed components
@@ -111,6 +127,12 @@ async function generatePage (pathname, componentpath, props) {
 
   if (pathname[0] !== '/') pathname = '/' + pathname
   if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
+
+  // add this page along with props and everything to the list that will be
+  // postprocessed on end()
+  if (!skipGeneratedPagesList) {
+    generatedPages.push({pathname, componentpath, props})
+  }
 
   console.log(`> generatePage(${pathname}, ${componentpath}, ${typeof props === 'object'
     ? Object.keys(props).map(k => `${k}=${typeof props[k] === 'string'

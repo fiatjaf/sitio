@@ -130,7 +130,11 @@ For a blog you should also write an index that shows all the pages, that's just 
 
 ## plugins
 
-For advanced users: you can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=keywords:sitio-plugin) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
+For advanced users: there are two kinds of plugins, normal plugins and postprocessor plugins.
+
+### normal plugins
+
+You can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=keywords:sitio-plugin) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
 
 ```javascript
 plug(
@@ -142,6 +146,14 @@ plug(
 ```
 
 Creating a plugin is easy too. Please look at the code on [the plugins subdirectory](plugins) for some examples.
+
+### postprocessors
+
+A postprocessor is a plugin that takes all the data, `{pathname, componentpath, props}`, for all pages already generated in the site. You can use it with `const {postprocess} = require('sitio')`.
+
+Suppose you want to generate an RSS feed, or a search page with all the data statically dumped in the HTML, or perhaps a custom error page that shows a list of all pages on the site -- well, you don't need a postprocessor for these, as you can just write your own login for it in your `generate.js` file, but it may be handy to modularize and pack useful components like postprocessors that do this kind of stuff. Also, if you're generating pages with a [normal plugin](normal-plugin), like the way it's done on [sitios.xyz](https://sitios.xyz/), then you absolutely need a postprocessor.
+
+For more examples on how to do it, please see the code on [the postprocessors subdirectory](postprocessors).
 
 ## hosted version
 
