@@ -1,4 +1,5 @@
 const util = require('util')
+const path = require('path')
 const Trello = require('node-trello')
 const md = require('markdown-it')({
   html: true,
@@ -133,8 +134,9 @@ module.exports = async function (root, gen, {
       gen(card.path, 'sitio/component-utils/article.js', cardPageProps(card, {root}))
 
       // permalink based on card id or shortLink
-      gen(`/c/${card.id}`, 'sitio/component-utils/redirect.js', {target: card.path})
-      gen(`/c/${card.shortLink}`, 'sitio/component-utils/redirect.js', {target: card.path})
+      let target = path.join('../..', card.path)
+      gen(`/c/${card.id}`, 'sitio/component-utils/redirect.js', {target})
+      gen(`/c/${card.shortLink}`, 'sitio/component-utils/redirect.js', {target})
     })
 
   // cards that are absolute pages
