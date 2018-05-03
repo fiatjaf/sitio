@@ -2,6 +2,8 @@ var React = require('react')
 var render = require('react-dom').render
 var createClass = require('create-react-class')
 var createHistory = require('history').createBrowserHistory
+var createHelmetStore = require('react-safety-helmet').createHelmetStore
+var HelmetProvider = require('react-safety-helmet').HelmetProvider
 var amd = require('micro-amd')()
 var catchLinks = require('catch-links')
 
@@ -10,7 +12,6 @@ const {standaloneURL} = require(process.env.utils)
 window.define = amd.define.bind(amd)
 window.define.amd = true
 
-const helmet = process.env.helmet
 const body = process.env.body
 
 var history = createHistory({
@@ -59,11 +60,11 @@ window.reactSite.Main = createClass({
 
   render: function () {
     var Body = require(body)
-    var Helmet = require(helmet)
 
-    return React.createElement(Body, this.state.props,
-      React.createElement(Helmet, this.state.props),
-      React.createElement(this.state.component, this.state.props)
+    return React.createElement(HelmetProvider, {store: this.props.helmetStore},
+      React.createElement(Body, this.state.props,
+        React.createElement(this.state.component, this.state.props)
+      )
     )
   }
 })
@@ -77,6 +78,7 @@ amd.require([standaloneURL(window.location.pathname)], function (page) {
   props.global = window.reactSite
 
   render(React.createElement(window.reactSite.Main, {
+    helmetStore: createHelmetStore(),
     component: page.component,
     props: props
   }), window.reactSite.rootElement)

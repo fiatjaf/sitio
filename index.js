@@ -7,7 +7,7 @@ const mkdirp = require('mkdirp')
 const glob = require('glob')
 const copy = require('cp-file')
 const React = require('react')
-const ReactHelmet = require('react-helmet').default
+const {HelmetProvider, createHelmetStore} = require('react-safety-helmet')
 const yargs = require('yargs')
 const renderToString = require('react-dom/server').renderToString
 const pretty = require('pretty')
@@ -34,7 +34,6 @@ const defaultIgnore = [
   '**/.*',
   `${targetdirname}/**`,
   yargs.argv['$0'],
-  yargs.argv.helmet,
   yargs.argv.body
 ]
 
@@ -111,6 +110,7 @@ module.exports.postprocess = async function (pluginName, data = {}) {
 
 module.exports.generatePage = generatePage
 async function generatePage (pathname, componentpath, props, skipGeneratedPagesList) {
+  props = props || {}
   var waiting = []
 
   // first try to require needed components
@@ -122,7 +122,6 @@ async function generatePage (pathname, componentpath, props, skipGeneratedPagesL
   let Component = require(componentpath)
   usedComponents.push(componentpath)
 
-  let Helmet = require(yargs.argv.helmet)
   let Body = require(yargs.argv.body)
 
   if (pathname[0] !== '/') pathname = '/' + pathname
@@ -158,12 +157,16 @@ async function generatePage (pathname, componentpath, props, skipGeneratedPagesL
   }, props)
 
   /* generating static HTML */
-  let page = React.createElement(Body, staticprops,
-    React.createElement(Helmet, staticprops),
-    React.createElement(Component, staticprops)
+  let helmetStore = createHelmetStore()
+  let page = React.createElement(HelmetProvider, {store: helmetStore},
+    React.createElement(Body, staticprops,
+      React.createElement(Component, staticprops)
+    )
   )
 
-  let head = ReactHelmet.renderStatic()
+  let body = renderToString(page)
+  let head = helmetStore.renderStatic()
+
   var html = '<!doctype html>' +
   '<html ' + head.htmlAttributes.toString() + '>' +
     '<head>' +
@@ -174,8 +177,8 @@ async function generatePage (pathname, componentpath, props, skipGeneratedPagesL
       head.noscript.toString() +
       head.script.toString() +
     '</head>' +
-    '<body>' +
-      renderToString(page) +
+    '<body ' + head.bodyAttributes.toString() + '>' +
+      body +
     '</body>' +
   '</html>'
 
@@ -257,7 +260,7 @@ module.exports.end = async function () {
     console.error('(!) error getting package dependencies names.', e)
   }
 
-  console.log('(i) passing', [path.join(__dirname, 'utils'), yargs.argv.body, yargs.argv.helmet], 'to browserify' + (incremental ? 'inc' : '') + '.')
+  console.log('(i) passing', [path.join(__dirname, 'utils'), yargs.argv.body], 'to browserify' + (incremental ? 'inc' : '') + '.')
 
   let b = browserify(path.join(__dirname, '/templates/main.js'), {
     paths: process.env.NODE_PATH.split(':'),
@@ -269,21 +272,19 @@ module.exports.end = async function () {
     {
       utils: path.join(__dirname, 'utils'),
       body: yargs.argv.body,
-      helmet: yargs.argv.helmet,
       globals: globals
     }
   )
   b.require([
     'react',
     'react-dom',
-    'react-helmet',
+    'react-safety-helmet',
     'history',
     'catch-links',
     'micro-amd',
     path.join(__dirname, 'utils')
   ])
   b.require(pageExternalPackages)
-  b.require(yargs.argv.helmet)
   b.require(yargs.argv.body)
   b.require(usedComponents)
   let br = b.bundle()

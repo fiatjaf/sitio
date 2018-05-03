@@ -1,6 +1,6 @@
 {
   "name": "sitio",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
   "bin": {
@@ -34,7 +34,7 @@
     "pretty": "^2.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-helmet": "^5.2.0",
+    "react-safety-helmet": "^6.2.0",
     "rimraf": "^2.6.1",
     "run-parallel": "^1.1.6",
     "run-series": "^1.1.4",

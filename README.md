@@ -10,7 +10,7 @@
 
 ## api
 
-**sitio** provides 5 methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` takes optionally an object to be merged with the global object and prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
+**sitio** provides 5 basic methods: `init`, `end`, `generatePage`, `copyStatic` and `listFiles`. `init` takes optionally an object to be merged with the global object and prepares the directory for your static files; `listFiles(options)` gives you the list of files that may be of interest to your rendering process at given paths and glob patterns in general; `generatePage(pathname, componentPath, props)` generates a page at a given location with a given component and some props; `copyStatic(patternsArray)` copies static files to the site directory; and `end` finishes things up.
 
 ## quick tutorial
 
@@ -21,12 +21,13 @@ Here's a very simple site we can use **sitio** to generate. First we write a fil
 
 const {init, end, generatePage} = require('sitio')
 
-init({siteName: 'nothing'})
+async function main () {
+  await init({siteName: 'nothing'})
+  await generatePage('/', 'landing.js', {})
+  await end()
+}
 
-generatePage('/', 'landing.js', {})
-generatePage('/contact/', 'contact.js', {})
-
-end()
+main()
 ```
 
 The above expects a React component to be exported from `landing.js` and one from `contact.js`. It could be something like this:
@@ -37,75 +38,40 @@ The above expects a React component to be exported from `landing.js` and one fro
 var React = require('react')
 
 module.exports = function LandingPage () {
-  return React.createElement('div', {}, 'Hello, visitor!')
+  return h('div', 'Hello, visitor!')
 }
 ```
 
-```javascript
-# contact.js
-
-var React = require('react')
-
-module.exports = function ContactPage () {
-  return React.createElement('form', {method: 'post', action: 'https://formspree.io/me@myself.com'},
-    React.createElement('input', {name: 'name', placeholder: 'type your name'}),
-    React.createElement('button', {type: 'submit'}, 'Submit') 
-  )
-}
-```
-
-Besides that we'll need a file to define the parts of the site that will not change from page to page, which we'll call `body.js` and a file to define the contents of `<head>`, which we'll call `head.js` (they can't be in the same file because updating `<head>` with React is not straightforward, thus we forcibly use [react-helmet](https://github.com/nfl/react-helmet)).
+Besides that we'll need a file to define the parts of the site that will not change from page to page, which we'll call `body.js` and a file to define the contents of `<head>`, which we'll call `head.js` (they can't be in the same file because updating `<head>` with React is not straightforward, thus we forcibly use [react-safety-helmet](https://github.com/kouhin/react-safety-helmet)).
 
 ```javascript
 # body.js
 
 var React = require('react')
+var Helmet = require('react-safety-helmet').default
 
 module.exports = function Body (props) {
-  var pathname = props.location.pathname // the special location property is passed to all components
+  // the special .location property is passed to all components
+  var pathname = props.location.pathname
   
-  return React.createElement('div', {id: 'root'},
-    React.createElement('ul', {},
-      React.createElement('li', {},
-        React.createElement('a', {href: '/'}, 'home')
-      ),
-      React.createElement('li', {},
-        React.createElement('a', {href: '/contact/'}, 'contact')
-      )
-    ),
-    React.createElement('header', {}, 'you are browsing the page ' + pathname),
-    React.createElement('main', {}, props.children), // you must include props.children somewhere
-    React.createElement('footer', {}, 'this site was generated with sitio'),
-    React.createElement('script', {src: '/bundle.js'}) // you must include /bundle.js at the bottom
-  )
-}
-```
-
-```javascript
-# head.js
-
-var React = require('react')
-var Helmet = require('react-helmet').default
-
-module.exports = function Head (props) { 
-  return React.createElement(Helmet, { 
-    meta: [ 
-      {charset: 'utf-8'},
-      {httpEquiv: 'x-ua-compatible', content: 'ie: edge'},
-      {name: 'description', content: 'nothing at all'},
-      {name: 'viewport', content: 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes'}
-    ],
-    title: props.location.pathname + ' at ' + props.global.siteName,
-    link: [],
-    script: []
-  })
+  return [
+    h(Helmet, [
+      h('meta', {charSet: 'utf-8'}),
+      h('title', 'page title'),
+      h('link', {href: 'some.css', rel: 'stylesheet'})
+    ]),
+    h('main', [
+      h('h1', 'you are on page ' + pathname)
+    ]),
+    h('script', {src: '/bundle.js'}) // include /bundle.js at the bottom
+  ]
 }
 ```
 
 Now, finally we can generate the site. You must call your `sitio` executable, which is probably at `./node_modules/.bin/sitio` if you installed it with `npm install sitio`. That executable is only necessary because it sets the `NODE_PATH` environment variable, then it just calls your `generate.js` directly.
 
 ```shell
-sitio generate.js --body=body.js --helmet=head.js
+sitio generate.js --body=body.js
 ```
 
 Considering the directory structure given by the 5 files above, it will generate the following at `./_site`:
@@ -122,11 +88,21 @@ _site/
 
 What does it mean? If you browse to `/` you'll be served with `index.html`, which will then load `bundle.js`. After that point, every internal link you click, for example, `/contact/` will not load `contact/index.html`, but instead `contact/contact.js`, a really small JS file that contains just the props and metadata necessary to render the same DOM that is expressed in HTML form at `contact/index.html`. Because of this, browsing is almost instantaneous.
 
-### making a markdown blog
+### making a blog
 
-Writing READMEs is wearing. I'll write this later, but basically you'll define a component to parse Markdown from the file contents with something like [gray-matter](https://www.npmjs.com/package/gray-matter) and call `generatePage()` for all your articles, listed with `listFiles(pattern: 'blog/**.md')`. `listFiles` will give you `{content, pathname, filepath}` and a bunch of other useful metadata about a file.
+To write a blog you just need to define a React component in a file, say, 'post.js', then call `generatePage('/blog/<slug>', 'post.js', {content, metadata})` once for every blog post, passing the blog contents and metadata to each page in any format you want.
 
-For a blog you should also write an index that shows all the pages, that's just another React component. You can pass to it just the names, dates and pathnames of the blog posts, or you can also, for example, extract summaries from the blogposts with [extract-summary](https://www.npmjs.com/package/extract-summary) and pass those too.
+### a markdown blog from files in the local disk
+
+For that you can use `sitio.listFiles({pattern: 'posts/*.md'})`, which you return all the markdown files in the `posts/` directory [already read](extract.js), then [grab its YAML front-matter](https://www.npmjs.com/package/gray-matter) and [turn their markdown content into HTML](https://www.npmjs.com/package/markdown-it).
+
+### a blog from content on a headless CMS
+
+Since your `generate.js` file is just a normal Nodejs script, you can install any library (`npm install --save-dev <package>`) you need to fetch each post content from your headless CMS, then fetch the contents. Then, write your `post.js` component to match the structure you want for your posts and call `generatePage()` with the data fetched from the headless CMS. Done.
+
+### generating an index, or a list of posts, with pagination
+
+Here the process is the same. Write a `list-of-posts.js` (these names are just examples) component and call `generatePage('/page/2', 'list-of-posts.js', {page: 2, posts: []})` passing the array of posts that will be rendered on each page. Normally you will not want to have all the post contents and metadata rendered on the index of posts, so you must filter out the data you don't want, perhaps [grab an excerpt](https://www.npmjs.com/package/extract-summary) of the post contents and that's it.
 
 ## plugins
 
