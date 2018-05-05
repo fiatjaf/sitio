@@ -1,5 +1,5 @@
 const React = require('react')
-const Helmet = require('react-helmet').default
+const Helmet = require('react-safe-helmet').default
 
 module.exports = class extends React.Component {
   componentDidMount () {
@@ -13,12 +13,12 @@ module.exports = class extends React.Component {
 
   render () {
     return React.createElement('p', {},
-      React.createElement(Helmet, {
-        meta: [{
+      React.createElement(Helmet, {},
+        React.createElement('meta', {
           httpEquiv: 'refresh',
           content: `0; url=${this.props.target}`
-        }]
-      }, []),
+        })
+      ),
       React.createElement('a', {href: this.props.target}, 'Redirect')
     )
   }
