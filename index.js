@@ -238,7 +238,7 @@ module.exports.copyStatic = async function (patterns) {
     .map(staticFiles =>
       staticFiles.map(filepath => {
         console.log(`# copyStatic(${filepath})`)
-        copy(
+        copy.sync(
           path.join(process.cwd(), filepath),
           path.join(targetdir, filepath)
         )
