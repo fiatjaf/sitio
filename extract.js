@@ -1,8 +1,10 @@
+/** @format */
+
 const fs = require('fs')
 const path = require('path')
 const child_process = require('child_process')
 
-function url_pathname (filepath) {
+function url_pathname(filepath) {
   var target = filepath.replace(/\.\w+$/, '.html')
 
   let basename = path.basename(target)
@@ -14,11 +16,11 @@ function url_pathname (filepath) {
     )
   }
 
-  let pathname = '/' + target.slice(0, -('index.html').length)
+  let pathname = '/' + target.slice(0, -'index.html'.length)
   return pathname
 }
 
-module.exports = function (filepath) {
+module.exports = function(filepath) {
   let pathname = url_pathname(filepath)
 
   var raw = fs.readFileSync(filepath, 'utf-8')
@@ -44,13 +46,17 @@ module.exports = function (filepath) {
       `git log --pretty=format:%ai -- '${process.env.FILEPATH}' | tail -n 1`,
       {encoding: 'utf8'}
     )
-  } catch (e) { delete data.gitCreated }
+  } catch (e) {
+    delete data.gitCreated
+  }
   try {
     data.gitModified = child_process.execSync(
       `git log --pretty=format:%ai -- '${process.env.FILEPATH}' | head -n 1`,
       {encoding: 'utf8'}
     )
-  } catch (e) { delete data.gitModified }
+  } catch (e) {
+    delete data.gitModified
+  }
 
   if (stat.birthtime < new Date(1972, 1, 1)) {
     data.fsCreated = stat.birthtime

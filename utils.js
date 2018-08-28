@@ -1,6 +1,8 @@
+/** @format */
+
 module.exports.standaloneURL = standaloneURL
 
-function standaloneURL (pathname) {
+function standaloneURL(pathname) {
   if (pathname[pathname.length - 1] !== '/') pathname = pathname + '/'
 
   var url
@@ -11,11 +13,11 @@ function standaloneURL (pathname) {
   }
 
   if (typeof window !== 'undefined') {
-    if (!window.reactSite.production) {
+    if (!window.sitio.production) {
       url += '?t=' + Date.now()
     }
 
-    url = window.reactSite.baseURL + url
+    url = window.sitio.baseURL + url
   }
 
   return url

@@ -18,13 +18,13 @@ var history = createHistory({
   basename: ''
 })
 
-window.reactSite = process.env.globals
-window.reactSite.history = history
-window.reactSite.utils = require(process.env.utils)
-window.reactSite.rootElement = document.body
+window.sitio = process.env.globals
+window.sitio.history = history
+window.sitio.utils = require(process.env.utils)
+window.sitio.rootElement = document.body
 
-window.reactSite.Main = createClass({
-  displayName: 'ReactSiteMain',
+window.sitio.Main = createClass({
+  displayName: 'SitioMain',
 
   getInitialState: function () {
     return {
@@ -41,7 +41,7 @@ window.reactSite.Main = createClass({
       amd.require([standaloneURL(loc.pathname)], function (page) {
         var props = page.props
         props.location = loc
-        props.global = window.reactSite
+        props.global = window.sitio
 
         self.setState({
           component: page.component,
@@ -53,7 +53,7 @@ window.reactSite.Main = createClass({
       })
     })
 
-    catchLinks(window.reactSite.rootElement, function (href) {
+    catchLinks(window.sitio.rootElement, function (href) {
       history.push(href)
     })
   },
@@ -75,11 +75,11 @@ amd.require([standaloneURL(window.location.pathname)], function (page) {
     pathname: window.location.pathname,
     search: ''
   }
-  props.global = window.reactSite
+  props.global = window.sitio
 
-  render(React.createElement(window.reactSite.Main, {
+  render(React.createElement(window.sitio.Main, {
     helmetStore: createHelmetStore(),
     component: page.component,
     props: props
-  }), window.reactSite.rootElement)
+  }), window.sitio.rootElement)
 })

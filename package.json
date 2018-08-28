@@ -1,11 +1,8 @@
 {
   "name": "sitio",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
-  "bin": {
-    "sitio": "./cli.sh"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fiatjaf/sitio.git"
