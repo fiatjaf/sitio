@@ -1,5 +1,5 @@
 const React = require('react')
-const Helmet = require('react-safe-helmet').default
+const Helmet = require('react-safety-helmet').default
 
 module.exports = class extends React.Component {
   componentDidMount () {

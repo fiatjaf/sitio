@@ -1,6 +1,6 @@
 {
   "name": "sitio",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
   "repository": {
