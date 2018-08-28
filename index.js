@@ -18,9 +18,11 @@ const browserify = require('browserify')
 const extract = require('./extract')
 const {standaloneURL} = require('./utils')
 
-module.paths.unshift(path.join(path.resolve(__dirname), 'node_modules'))
-module.paths.unshift(process.cwd())
-module.paths.unshift(path.join(process.cwd(), 'node_modules'))
+module.paths = [
+  path.join(path.resolve(__dirname), 'node_modules'),
+  process.cwd(),
+  path.join(process.cwd(), 'node_modules')
+]
 
 const targetdirname =
   yargs.argv['target-dir'] || process.env.TARGET_DIR || '_site'
@@ -38,7 +40,7 @@ const defaultIgnore = [
   yargs.argv.body
 ]
 
-var usedComponents = []
+var usedComponents = {}
 
 var globals = {
   baseURL: yargs.argv['base-url'] || process.env.BASE_URL || '',
@@ -144,7 +146,7 @@ async function generatePage(
       : componentpath
 
   let Component = require(componentpath)
-  usedComponents.push(componentpath)
+  usedComponents[componentpath] = true
 
   let Body = require(yargs.argv.body)
 
@@ -332,7 +334,8 @@ module.exports.end = async function() {
   ])
   b.require(pageExternalPackages)
   b.require(yargs.argv.body)
-  b.require(usedComponents)
+  b.require(Object.keys(usedComponents))
+
   let br = b.bundle()
 
   console.log('(i) writing the result to bundle.js')
