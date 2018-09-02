@@ -38,11 +38,9 @@ The above expects a React component to be exported from `landing.js` and one fro
 var React = require('react')
 
 module.exports = function LandingPage () {
-  return h('div', 'Hello, visitor!')
+  return <div>Hello, visitor!</div>
 }
 ```
-
-Besides that we'll need a file to define the parts of the site that will not change from page to page, which we'll call `body.js` and a file to define the contents of `<head>`, which we'll call `head.js` (they can't be in the same file because updating `<head>` with React is not straightforward, thus we forcibly use [react-safety-helmet](https://github.com/kouhin/react-safety-helmet)).
 
 ```javascript
 # body.js
@@ -54,17 +52,20 @@ module.exports = function Body (props) {
   // the special .location property is passed to all components
   var pathname = props.location.pathname
   
-  return [
-    h(Helmet, [
-      h('meta', {charSet: 'utf-8'}),
-      h('title', 'page title'),
-      h('link', {href: 'some.css', rel: 'stylesheet'})
-    ]),
-    h('main', [
-      h('h1', 'you are on page ' + pathname)
-    ]),
-    h('script', {src: '/bundle.js'}) // include /bundle.js at the bottom
-  ]
+  return (
+    <>
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>page title</title>
+        <link', {href: 'some.css', rel: 'stylesheet'})
+      </Helmet>
+      <main>
+        <h1>you are on page {pathname}</h1>
+        <div>{props.children}</div>
+      ]),
+      <script src="/bundle.js" /> // include /bundle.js at the bottom
+    </>
+  )
 }
 ```
 
@@ -140,7 +141,7 @@ Visit [sitios.xyz](https://sitios.xyz/) for a website creating service that comb
   * **Why is this better than writing my own single-page application with React?** Because you get static files, in HTML, that work for clients without Javascript. Also, you can use **sitio** as a single-page application generator, since you can use super complex components at any route you want, the benefit is that you won't need a full-featured backend server for routing, since every route will have an `index.html` there waiting to be served you can just use a static server.
   * **Why is this better than writing my own HTML pages manually?** Because you get the nice, fast and lightweight browsing that does not mess with your history.
   * **Why is this better than any other static site generator?** Because of the above, and also because you can use complex rendering logic in React components at specific routes in any way you want. Not only that, you can also code certain pages of your mostly static site to have interactive React components or any single-page application features you want, all this combined with Markdown rendering, for example.
-  * **What goes in `bundle.js`?** Basically everything that is not actual content. Your `body` and `helmet` components, all `sitio` dependencies that must be used in client-side, all packages in the `.dependencies` of your `package.json`, all component files declared in `generatePage()` and their relative dependencies. `bundle.js` only needs to be loaded once (or you can opt to not load it at all,  if you just want a bare static site), so it is a good idea to include everything there and only some parameters in the dinamically loaded JS files corresponding to each different page of the site.
+  * **What goes in `bundle.js`?** Basically everything that is not actual content. Your `body` component, all `sitio` dependencies that must be used in client-side, all packages in the `.dependencies` of your `package.json`, all component files declared in `generatePage()` and their relative dependencies. `bundle.js` only needs to be loaded once (or you can opt to not load it at all,  if you just want a bare static site), so it is a good idea to include everything there and only some parameters in the dinamically loaded JS files corresponding to each different page of the site.
   * **What goes in each JS file corresponding to a page in the site?** Everything you pass to it in `generatePage()` (which will include, for example, full texts for blog posts) plus the name of the component that will be used to render it, also given in that function call. Since each of these pages may have lots of text contents, it doesn't make sense to include them all in a single bundle, as other React-based static site generators do. Loading them asynchronously is very fast since they come without HTML boilerplate.
   * **What if I want to use Babel, Buble or other preprocessors?** [browserify](https://github.com/substack/node-browserify) is used under the hood, and you can use [transforms](https://github.com/substack/node-browserify#browserifytransform) by specifying them in your `package.json`. Just remember that your code must be valid on Node.js, as it is run there to generate the static HTML before browserify transforms can do their job.
   * **What if I want to render content from different or external sources?** That's a great use case for **sitio**. If you have content hosted in a headless CMS, a Google Document, a bunch of text files or who-knows-what, then you can just write JS code at your `generate.js` to fetch the content from there and call `generatePage()` with it.
