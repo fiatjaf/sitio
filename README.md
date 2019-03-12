@@ -51,7 +51,7 @@ var Helmet = require('react-safety-helmet').default
 module.exports = function Body (props) {
   // the special .location property is passed to all components
   var pathname = props.location.pathname
-  
+
   return (
     <>
       <Helmet>
@@ -72,7 +72,7 @@ module.exports = function Body (props) {
 Now, finally we can generate the site. You must call your `sitio` executable, which is probably at `./node_modules/.bin/sitio` if you installed it with `npm install sitio`. That executable is only necessary because it sets the `NODE_PATH` environment variable, then it just calls your `generate.js` directly.
 
 ```shell
-sitio generate.js --body=body.js
+node generate.js --body=body.js
 ```
 
 Considering the directory structure given by the 5 files above, it will generate the following at `./_site`:
@@ -104,37 +104,6 @@ Since your `generate.js` file is just a normal Nodejs script, you can install an
 ### generating an index, or a list of posts, with pagination
 
 Here the process is the same. Write a `list-of-posts.js` (these names are just examples) component and call `generatePage('/page/2', 'list-of-posts.js', {page: 2, posts: []})` passing the array of posts that will be rendered on each page. Normally you will not want to have all the post contents and metadata rendered on the index of posts, so you must filter out the data you don't want, perhaps [grab an excerpt](https://www.npmjs.com/package/extract-summary) of the post contents and that's it.
-
-## plugins
-
-For advanced users: there are two kinds of plugins, normal plugins and postprocessor plugins.
-
-### normal plugins
-
-You can also import `const {plug} = require('sitio')` and call it with one of our [plugins](https://www.npmjs.com/search?q=keywords:sitio-plugin) to get a bunch of pages generated automatically. `plug` calls take the following arguments:
-
-```javascript
-plug(
-  pluginName, // like 'sitio-trello' -- the plugin code will be require'd automatically
-  rootPath, // a path like '/trello' -- all pages generated will all be put under this
-  data, // an object containing any kind of data the plugin may expect
-  done // a function that will be called with done(err) as soon as the plugin finishes its job
-)
-```
-
-Creating a plugin is easy too. Please look at the code on [the plugins subdirectory](plugins) for some examples.
-
-### postprocessors
-
-A postprocessor is a plugin that takes all the data, `{pathname, componentpath, props}`, for all pages already generated in the site. You can use it with `const {postprocess} = require('sitio')`.
-
-Suppose you want to generate an RSS feed, or a search page with all the data statically dumped in the HTML, or perhaps a custom error page that shows a list of all pages on the site -- well, you don't need a postprocessor for these, as you can just write your own login for it in your `generate.js` file, but it may be handy to modularize and pack useful components like postprocessors that do this kind of stuff. Also, if you're generating pages with a [normal plugin](normal-plugin), like the way it's done on [sitios.xyz](https://sitios.xyz/), then you absolutely need a postprocessor.
-
-For more examples on how to do it, please see the code on [the postprocessors subdirectory](postprocessors).
-
-## hosted version
-
-Visit [sitios.xyz](https://sitios.xyz/) for a website creating service that combines [sitio plugins](#plugins) and [classless themes](https://github.com/fiatjaf/classless) to generate and host sites for you without you having to touch any code.
 
 ## faq
 

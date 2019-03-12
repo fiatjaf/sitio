@@ -1,6 +1,6 @@
 {
   "name": "sitio",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "description": "React-based static site generator without Webpack.",
   "main": "index.js",
   "repository": {
@@ -15,7 +15,7 @@
     "browserify",
     "gatsby"
   ],
-  "author": "Giovanni T. Parra",
+  "author": "fiatjaf",
   "license": "MIT",
   "dependencies": {
     "browserify": "^16.1.1",
